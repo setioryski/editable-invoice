@@ -1,0 +1,23 @@
+#hiderow,
+.delete {
+  display: none;
+}
+
+.delete-date {
+  display: none;
+}
+input[type="date"] {
+  display: none;
+}
+
+@media print {
+  .no-print {
+      display: none;
+  }
+}
+
+.description span {
+  margin-left: -15px;
+  margin-right: 15px;
+}
+
