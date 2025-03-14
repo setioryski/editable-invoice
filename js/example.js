@@ -100,43 +100,25 @@ function loadInvoice() {
   fileInput.click();
 }
 
-// Create new item row function
-function createNewItemRow(item) {
-  const row = document.createElement('tr');
-  row.className = 'item-row';
-  row.innerHTML = `
-      <td class="item-name">
-          <div class="delete-wpr">
-              <textarea>${item.order}</textarea>
-              <a class="delete" href="javascript:;" title="Remove row">X</a>
-          </div>
-      </td>
-      <td class="description">
-          <textarea readonly>${formatDate(item.checkIn)} - ${formatDate(item.checkOut)}</textarea>
-          <input type="date" class="checkin" value="${item.checkIn}" oninput="updateDescription(this.parentNode);" />
-          <input type="date" class="checkout" value="${item.checkOut}" oninput="updateDescription(this.parentNode);" />
-      </td>
-      <td><textarea class="cost">${item.unitCost}</textarea></td>
-      <td><textarea class="qty">${item.qty}</textarea></td>
-      <td><span class="price">${item.price}</span></td>
-  `;
-  bindEventsToRow(row);
-  return row;
-}
+
 
 // Update description function
 function updateDescription(descriptionCell) {
   const checkinInput = descriptionCell.querySelector('.checkin');
   const checkoutInput = descriptionCell.querySelector('.checkout');
   const descriptionTextarea = descriptionCell.querySelector('textarea');
-  
+
+  // Only update if both dates are present
   if (checkinInput.value && checkoutInput.value) {
-      const formattedCheckin = formatDate(checkinInput.value);
-      const formattedCheckout = formatDate(checkoutInput.value);
-      descriptionTextarea.value = `${formattedCheckin} - ${formattedCheckout}`;
-      calculateDifference();
+    const formattedCheckin = formatDate(checkinInput.value);
+    const formattedCheckout = formatDate(checkoutInput.value);
+    // Put the date range into the description textarea
+    descriptionTextarea.value = `${formattedCheckin} - ${formattedCheckout}`;
+    // Also update nights, price, etc. by calling calculateDifference()
+    calculateDifference();
   }
 }
+
 
 // Calculate difference function
 function calculateDifference() {
@@ -200,14 +182,28 @@ function bindEventsToRow(row) {
 
 // Bind initial events
 $(document).ready(function() {
+  // Number the existing rows when the page loads.
+  updateOrderNumbers();
+
   $("#addrow").click(function() {
     $(".item-row:last").after(createNewRow());
     if ($(".delete").length > 0) $(".delete").show();
+    updateOrderNumbers(); // Update numbering after adding a row.
     bind();
   });
 
+  // Existing binding for delete events.
+  $(".delete").live('click', function(){
+    $(this).parents('.item-row').remove();
+    update_total();
+    update_balance();
+    updateOrderNumbers(); // Update numbering after deleting a row.
+    if ($(".delete").length < 2) $(".delete").hide();
+  });
+  
   bind();
 });
+
 
 function bind() {
   document.querySelectorAll('.cost').forEach(costInput => costInput.addEventListener('blur', update_price));
@@ -250,36 +246,48 @@ function getRoomDetails(roomType) {
 }
 
 function createNewRow() {
-  const rowCount = $(".item-row").length + 1;
-  const roomType = $("#roomType").val();
+  const rowCount = document.querySelectorAll('.item-row').length + 1;
+  const roomType = document.getElementById('roomType').value;
   const { orderText, price } = getRoomDetails(roomType);
 
   return `
-  <tr class="item-row">
-    <td class="item-name">
-      <div class="delete-wpr">
-        <textarea>${orderText}</textarea>
-        <a class="delete" href="javascript:;" title="Remove row">X</a>
-      </div>
-    </td>
-    <td class="description">
-      <textarea id="dateDisplay${rowCount}"></textarea>
-      <input type="date" class="checkin" name="checkin" oninput="calculateDifference();setTitle(${rowCount});" required pattern="\\d{4}-\\d{2}-\\d{2}" />
-      <input type="date" class="checkout" name="checkout" oninput="calculateDifference();setTitle(${rowCount});" required pattern="\\d{4}-\\d{2}-\\d{2}" />
-      <span class="delete-date" title="Clear date">X</span>
-      <br>
-    </td>
-    <td>
-      <textarea class="cost">${price}</textarea>
-    </td>
-    <td>
-      <textarea class="qty"></textarea>
-    </td>
-    <td>
-      <span class="price">${price}</span>
-    </td>
-  </tr>`;
+    <tr class="item-row">
+      <td class="item-name">
+        <div class="delete-wpr">
+          <span class="order-number">${rowCount}.</span>
+          <input type="text" class="room-name" value="${orderText}" />
+          <a class="delete" href="javascript:;" title="Remove row">X</a>
+        </div>
+      </td>
+      <td class="description">
+        <!-- We make this textarea "readonly" so user sees the date range without editing it. -->
+        <textarea readonly></textarea>
+
+        <!-- 
+          The key is to call updateDescription(this.parentNode) 
+          so that your "description" cell is updated with the 
+          formatted date range once both dates are chosen.
+        -->
+        <input type="date" class="checkin" oninput="updateDescription(this.parentNode);" required />
+        <input type="date" class="checkout" oninput="updateDescription(this.parentNode);" required />
+        <span class="delete-date" title="Clear date">X</span>
+      </td>
+      <td><textarea class="cost">${price}</textarea></td>
+      <td><textarea class="qty"></textarea></td>
+      <td><span class="price">${price}</span></td>
+    </tr>
+  `;
 }
+
+
+
+function updateOrderNumbers() {
+  $('.item-row').each(function(index) {
+    $(this).find('.order-number').text((index + 1) + '. ');
+  });
+}
+
+
 
 // $(document).ready(function() {
 //   $("#addrow").click(function() {
@@ -455,20 +463,24 @@ $(document).ready(function() {
 
   $("#paid").blur(update_balance);
    
-  //old code
-  // $("#addrow").click(function() {
-  //   $(".item-row:last").after(createNewRow());
-  //   if ($(".delete").length > 0) $(".delete").show();
-  //   bind();
-  // });
+  $("#addrow").click(function() {
+    $(".item-row:last").after(createNewRow());
+    if ($(".delete").length > 0) $(".delete").show();
+    updateOrderNumbers(); // This updates the sequential numbers.
+    bind();
+  });
+  
   
   bind();
   
-  $(".delete").live('click',function(){
+  $(".delete").live('click', function(){
     $(this).parents('.item-row').remove();
     update_total();
+    update_balance();
+    updateOrderNumbers(); // Re-number remaining rows.
     if ($(".delete").length < 2) $(".delete").hide();
   });
+  
   
   $("#cancel-logo").click(function(){
     $("#logo").removeClass('edit');

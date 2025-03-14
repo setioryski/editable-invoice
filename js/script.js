@@ -1,128 +1,119 @@
 document.addEventListener('DOMContentLoaded', () => {
-	let standardRoomCount = 201;
-	let deluxeRoomCount = 101;
+  let standardRoomCount = 201;
+  let deluxeRoomCount = 101;
 
-	const roomTypeSelect = document.getElementById('roomType');
-	const addRowLink = document.getElementById('addrow');
+  const roomTypeSelect = document.getElementById('roomType');
+  const addRowLink = document.getElementById('addrow');
 
-	addRowLink.addEventListener('click', () => {
-		const roomType = roomTypeSelect.value;
-		let orderRoom, price;
+  // Function to update order numbers for all rows.
+  function updateOrderNumbers() {
+    const rows = document.querySelectorAll('.item-row');
+    rows.forEach((row, index) => {
+      const orderSpan = row.querySelector('.order-number');
+      if (orderSpan) {
+        orderSpan.textContent = (index + 1) + '. ';
+      }
+    });
+  }
 
-		switch (roomType) {
-			case 'standard':
-				orderRoom = standardRoomCount++;
-				price = 250000;
-				break;
-			case 'standard_extra':
-				orderRoom = standardRoomCount++;
-				price = 300000;
-				break;
-			case 'deluxe':
-				orderRoom = deluxeRoomCount++;
-				price = 300000;
-				break;
-			case 'deluxe_extra':
-				orderRoom = deluxeRoomCount++;
-				price = 350000;
-				break;
-			default:
-				return; // Do nothing if no valid room type is selected
-		}
+  // Function that creates a new row in the desired format.
+  // It uses the static text "Room 101" and cost "250000" as per your sample.
+  function createNewRow() {
+    return `
+      <tr class="item-row">
+        <td class="item-name">
+          <div class="delete-wpr">
+            <span class="order-number"></span>
+            <textarea>Room 101</textarea>
+            <a class="delete" href="javascript:;" title="Remove row">X</a>
+          </div>
+        </td>
+        <td class="description">
+          <textarea id="dateDisplay2"></textarea>
+          <input type="date" class="checkin" name="checkin" oninput="calculateDifference();setTitle(2);" required pattern="\\d{4}-\\d{2}-\\d{2}" />
+          <input type="date" class="checkout" name="checkout" oninput="calculateDifference();setTitle(2);" required pattern="\\d{4}-\\d{2}-\\d{2}" />
+          <span class="delete-date" title="Clear date">X</span>
+        </td>
+        <td><textarea class="cost">250000</textarea></td>
+        <td><textarea class="qty"></textarea></td>
+        <td><span class="price">250000</span></td>
+      </tr>
+    `;
+  }
 
-		// Create a new row with the selected room details
-		const newRow = document.createElement('tr');
-		newRow.classList.add('item-row');
+  // Add event listener to the "Add a row" button.
+  addRowLink.addEventListener('click', () => {
+    // Create a new row element from the HTML string.
+    const tempContainer = document.createElement('tbody');
+    tempContainer.innerHTML = createNewRow().trim();
+    const newRow = tempContainer.firstChild;
 
-		newRow.innerHTML = `
-			<td class="item-name">
-				<div class="delete-wpr">
-					<textarea>Room ${orderRoom}</textarea>
-					<a class="delete" href="javascript:;" title="Remove row">X</a>
-				</div>
-			</td>
-			<td class="description">
-				<textarea></textarea>
-				<input type="date" class="checkin" name="checkin" oninput="calculateDifference();" required pattern="\\d{4}-\\d{2}-\\d{2}" />
-				<input type="date" class="checkout" name="checkout" oninput="calculateDifference();" required pattern="\\d{4}-\\d{2}-\\d{2}" />
-				<span class="delete-date" title="Clear date">X</span>
-			</td>
-			<td><textarea class="cost">${price}</textarea></td>
-			<td><textarea class="qty"></textarea></td>
-			<td><span class="price">${price}</span></td>
-		`;
+    // Insert the new row before the row with id "hiderow"
+    const hiderow = document.getElementById('hiderow');
+    hiderow.parentNode.insertBefore(newRow, hiderow);
 
-		// Insert the new row before the "Add a row" link
-		const hiderow = document.getElementById('hiderow');
-		hiderow.parentNode.insertBefore(newRow, hiderow);
+    // Bind the delete event to the new row.
+    newRow.querySelector('.delete').addEventListener('click', function() {
+      this.closest('tr').remove();
+      updateTotals();
+      updateOrderNumbers();
+    });
 
-		// Add event listener for the delete button
-		newRow.querySelector('.delete').addEventListener('click', function() {
-			this.closest('tr').remove();
-			updateTotals();
-		});
+    updateTotals();
+    updateOrderNumbers();
+  });
 
-		// Reset counters if they exceed room limits
-		if (standardRoomCount > 208) {
-			standardRoomCount = 201;
-		}
-		if (deluxeRoomCount > 108) {
-			deluxeRoomCount = 101;
-		}
+  // Calculate the difference between check-in and check-out dates and update totals.
+  function calculateDifference() {
+    const rows = document.querySelectorAll('.item-row');
+    rows.forEach((row) => {
+      const checkinInput = row.querySelector('.checkin');
+      const checkoutInput = row.querySelector('.checkout');
+      const qtyTextarea = row.querySelector('.qty');
 
-		updateTotals();
-	});
+      if (checkinInput && checkoutInput && checkinInput.value && checkoutInput.value) {
+        const checkinDate = new Date(checkinInput.value);
+        const checkoutDate = new Date(checkoutInput.value);
+        const timeDifference = checkoutDate - checkinDate;
+        const dayDifference = timeDifference / (1000 * 3600 * 24);
+        qtyTextarea.value = dayDifference > 0 ? dayDifference : 0;
+      }
+    });
+    updateTotals();
+  }
 
-	// Calculate the difference between check-in and check-out dates and update the totals
-	function calculateDifference() {
-		const rows = document.querySelectorAll('.item-row');
-		rows.forEach((row, index) => {
-			const checkinInput = row.querySelector('.checkin');
-			const checkoutInput = row.querySelector('.checkout');
-			const qtyTextarea = row.querySelector('.qty');
+  // Update the subtotal, total, and balance due.
+  function updateTotals() {
+    let subtotal = 0;
+    const rows = document.querySelectorAll('.item-row');
 
-			if (checkinInput.value && checkoutInput.value) {
-				const checkinDate = new Date(checkinInput.value);
-				const checkoutDate = new Date(checkoutInput.value);
-				const timeDifference = checkoutDate - checkinDate;
-				const dayDifference = timeDifference / (1000 * 3600 * 24);
+    rows.forEach(row => {
+      const cost = parseFloat(row.querySelector('.cost').value);
+      const qty = parseFloat(row.querySelector('.qty').value);
+      const price = cost * (isNaN(qty) ? 0 : qty);
+      row.querySelector('.price').textContent = price.toFixed(2);
+      subtotal += price;
+    });
 
-				qtyTextarea.value = dayDifference > 0 ? dayDifference : 0;
-			}
-		});
+    document.getElementById('subtotal').textContent = subtotal.toFixed(2);
+    document.getElementById('total').textContent = subtotal.toFixed(2);
 
-		updateTotals();
-	}
+    const paid = parseFloat(document.getElementById('paid').value);
+    const balanceDue = subtotal - (isNaN(paid) ? 0 : paid);
+    document.querySelector('.due').textContent = balanceDue.toFixed(2);
+  }
 
-	// Update the subtotal, total, and balance due
-	function updateTotals() {
-		let subtotal = 0;
-		const rows = document.querySelectorAll('.item-row');
+  // Bind delete events for existing rows.
+  document.querySelectorAll('.delete').forEach(button => {
+    button.addEventListener('click', function() {
+      this.closest('tr').remove();
+      updateTotals();
+      updateOrderNumbers();
+    });
+  });
 
-		rows.forEach(row => {
-			const cost = parseFloat(row.querySelector('.cost').value);
-			const qty = parseFloat(row.querySelector('.qty').value);
-			const price = cost * (isNaN(qty) ? 0 : qty);
-			row.querySelector('.price').textContent = price.toFixed(2);
-			subtotal += price;
-		});
+  // Bind event listener for the "Amount Paid" input.
+  document.getElementById('paid').addEventListener('input', updateTotals);
 
-		document.getElementById('subtotal').textContent = subtotal.toFixed(2);
-		document.getElementById('total').textContent = subtotal.toFixed(2);
-
-		const paid = parseFloat(document.getElementById('paid').value);
-		const balanceDue = subtotal - (isNaN(paid) ? 0 : paid);
-		document.querySelector('.due').textContent = balanceDue.toFixed(2);
-	}
-
-	// Add event listener to the existing delete buttons
-	document.querySelectorAll('.delete').forEach(button => {
-		button.addEventListener('click', function() {
-			this.closest('tr').remove();
-			updateTotals();
-		});
-	});
-
-	// Add event listener to the amount paid input
-	document.getElementById('paid').addEventListener('input', updateTotals);
+  // (Assumes that functions such as setTitle() exist elsewhere in your code.)
 });

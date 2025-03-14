@@ -69,13 +69,14 @@ Phone: 0822 5510-0105</textarea>
 				</tr>
 			</thead>
 			<tbody>
-				<tr class="item-row">
-					<td class="item-name">
-						<div class="delete-wpr">
-							<textarea>Room 101</textarea>
-							<a class="delete" href="javascript:;" title="Remove row">X</a>
-						</div>
-					</td>
+		<tr class="item-row">
+  <td class="item-name">
+    <div class="delete-wpr">
+      <span class="order-number"></span>
+      <textarea>Room 101</textarea>
+      <a class="delete" href="javascript:;" title="Remove row">X</a>
+    </div>
+  </td>
 					<td class="description">
 						<textarea id="dateDisplay1"></textarea>
 						<input type="date" class="checkin" name="checkin" oninput="calculateDifference();setTitle(1);" required pattern="\d{4}-\d{2}-\d{2}" />
@@ -89,10 +90,11 @@ Phone: 0822 5510-0105</textarea>
 				<tr class="item-row">
 					<td class="item-name">
 						<div class="delete-wpr">
-							<textarea>Room 201</textarea>
-							<a class="delete" href="javascript:;" title="Remove row">X</a>
+						  <span class="order-number"></span>
+						  <textarea>Room 101</textarea>
+						  <a class="delete" href="javascript:;" title="Remove row">X</a>
 						</div>
-					</td>
+					  </td>
 					<td class="description">
 						<textarea id="dateDisplay2"></textarea>
 						<input type="date" class="checkin" name="checkin" oninput="calculateDifference();setTitle(2);" required pattern="\d{4}-\d{2}-\d{2}" />
