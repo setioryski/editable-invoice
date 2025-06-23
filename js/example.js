@@ -254,22 +254,23 @@ function createNewRow() {
     <tr class="item-row">
       <td class="item-name">
         <div class="delete-wpr">
-          <span class="order-number">${rowCount}.</span>
-          <input type="text" class="room-name" value="${orderText}" />
+          <span class="order-number">${rowCount}. </span>
+          <!-- use TEXTAREA, not INPUT, so your existing CSS lines up -->
+          <textarea>${orderText}</textarea>
           <a class="delete" href="javascript:;" title="Remove row">X</a>
         </div>
       </td>
       <td class="description">
-        <!-- We make this textarea "readonly" so user sees the date range without editing it. -->
-        <textarea readonly></textarea>
-
-        <!-- 
-          The key is to call updateDescription(this.parentNode) 
-          so that your "description" cell is updated with the 
-          formatted date range once both dates are chosen.
-        -->
-        <input type="date" class="checkin" oninput="updateDescription(this.parentNode);" required />
-        <input type="date" class="checkout" oninput="updateDescription(this.parentNode);" required />
+        <!-- give it the same id pattern your static rows use -->
+        <textarea id="dateDisplay${rowCount}" readonly></textarea>
+        <input type="date"
+               class="checkin"
+               oninput="updateDescription(this.parentNode); setTitle(${rowCount});"
+               required />
+        <input type="date"
+               class="checkout"
+               oninput="updateDescription(this.parentNode); setTitle(${rowCount});"
+               required />
         <span class="delete-date" title="Clear date">X</span>
       </td>
       <td><textarea class="cost">${price}</textarea></td>
@@ -278,6 +279,7 @@ function createNewRow() {
     </tr>
   `;
 }
+
 
 
 
