@@ -12,6 +12,17 @@
 	
 </head>
 
+<script>
+  // if not logged in, bounce to login.html
+  if (sessionStorage.getItem('loggedIn') !== 'true') {
+    window.location.href = 'login.html';
+  }
+</script>
+
+<button onclick="sessionStorage.removeItem('loggedIn'); window.location.href='login.html'">
+  Logout
+</button>
+
 <body onload="setTitle()">
 
 	<button class="no-print" onclick="saveInvoices()">Save Invoice</button>
