@@ -90,3 +90,28 @@ textarea:hover, textarea:focus, #items td.total-value textarea:hover, #items td.
   background: transparent;
   resize: none;
 }
+
+
+/* 1) center all header + cell text */
+#items th,
+#items td {
+  text-align: center;
+}
+
+/* 2) make the “1.” and “Room 101” sit side by side */
+#items td.item-name .delete-wpr {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 3) give a little space after the number */
+#items td.item-name .order-number {
+  margin-right: 6px;
+}
+
+/* 4) undo the 100% textarea width so it doesn’t force a line-break */
+#items td.item-name textarea {
+  width: auto !important;
+  display: inline-block;
+}
