@@ -90,5 +90,62 @@
     "total": "500000.00",
     "amountPaid": "0.00",
     "balanceDue": "500000.00"
+  },
+  "inv_1755077749384": {
+    "title": "Widget Corp. c/o Steve Widget",
+    "address": "Jalan Lintas Sumatera no.3\nSimpang Kuala Tanjung\nBatubara Sumatera Utara 21257\nPhone: 0822 5510-0105",
+    "date": "August 13, 2025",
+    "items": [
+      {
+        "order": "Room 101",
+        "checkIn": "",
+        "checkOut": "",
+        "unitCost": "300000",
+        "qty": "1",
+        "price": "300000.00"
+      }
+    ],
+    "subtotal": "300000.00",
+    "total": "300000.00",
+    "amountPaid": "0.00",
+    "balanceDue": "300000.00"
+  },
+  "inv_1755077887626": {
+    "title": "Widget Corp. c/o Steve Widget",
+    "address": "Jalan Lintas Sumatera no.3\nSimpang Kuala Tanjung\nBatubara Sumatera Utara 21257\nPhone: 0822 5510-0105",
+    "date": "August 13, 2025",
+    "items": [
+      {
+        "order": "Room 101",
+        "checkIn": "",
+        "checkOut": "",
+        "unitCost": "300000",
+        "qty": "1",
+        "price": "300000.00"
+      }
+    ],
+    "subtotal": "300000.0",
+    "total": "300000.0",
+    "amountPaid": "0.00",
+    "balanceDue": "300000.0"
+  },
+  "inv_1755077894441": {
+    "title": "Widget Corp. c/o Steve Widget",
+    "address": "Jalan Lintas Sumatera no.3\nSimpang Kuala Tanjung\nBatubara Sumatera Utara 21257\nPhone: 0822 5510-0105",
+    "date": "August 13, 2025",
+    "items": [
+      {
+        "order": "Room 101",
+        "checkIn": "",
+        "checkOut": "",
+        "unitCost": "300000",
+        "qty": "1",
+        "price": "300000.00"
+      }
+    ],
+    "subtotal": "300000.0",
+    "total": "300000.0",
+    "amountPaid": "0.00",
+    "balanceDue": "300000.0"
   }
 }
