@@ -1,103 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Editable Invoice</title>
-  </head>
-  <body>
-    <div id="page-wrap">
-        <div class="controls no-print">
-            <button id="save-btn">Save to Database</button>
-            <button id="history-btn">View History</button>
-            <button id="print-btn">Print Invoice</button>
-        </div>
-
-        <h1 id="header">INVOICE</h1>
-        
-        <div id="identity">
-            <textarea id="address">Jalan Lintas Sumatera no.3
-Simpang Kuala Tanjung
-Batubara Sumatera Utara 21257
-Phone: 0822 5510-0105</textarea>
-            <div id="logo">
-              <img id="image" src="/logo.png" alt="logo" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Editable Invoice</title>
+    <link rel="stylesheet" href="/src/login.css">
+</head>
+<body>
+    <div class="login-container">
+        <form id="login-form">
+            <h2>Login</h2>
+            <div class="input-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required>
             </div>
-        </div>
-        
-        <div style="clear:both"></div>
-        
-        <div id="customer">
-            <textarea id="customer-title">Widget Corp. c/o Steve Widget</textarea>
-            <table id="meta">
-                <tr>
-                    <td class="meta-head">Date</td>
-                    <td><textarea id="date">August 14, 2025</textarea></td>
-                </tr>
-            </table>
-        </div>
-        
-        <div class="no-print" style="margin: 20px 0; text-align: center;">
-            <label for="roomType">Select Room Type to Add:</label>
-            <select id="roomType">
-                <option value="standard">Standard Room</option>
-                <option value="standard_extrabed">Standard Room + Extra Bed</option>
-                <option value="deluxe">Deluxe Room</option>
-                <option value="deluxe_extrabed">Deluxe Room + Extra Bed</option>
-            </select>
-            <a href="#" id="addrow" title="Add a row">Add a row</a>
-        </div>
-
-        <table id="items">
-          <thead>
-              <tr>
-                  <th class="text-center">Item</th>
-                  <th class="text-center">Description</th>
-                  <th class="text-center">Unit Cost</th>
-                  <th class="text-center">Quantity</th>
-                  <th class="text-center">Price</th>
-              </tr>
-          </thead>
-          <tbody>
-              </tbody>
-          <tfoot>
-              <tr>
-                  <td colspan="2" class="blank"> </td>
-                  <td colspan="2" class="total-line">Subtotal</td>
-                  <td class="total-value"><div id="subtotal">0.00</div></td>
-              </tr>
-              <tr>
-                  <td colspan="2" class="blank"> </td>
-                  <td colspan="2" class="total-line">Total</td>
-                  <td class="total-value"><div id="total">0.00</div></td>
-              </tr>
-              <tr>
-                  <td colspan="2" class="blank"> </td>
-                  <td colspan="2" class="total-line">Amount Paid</td>
-                  <td class="total-value"><textarea id="paid">0.00</textarea></td>
-              </tr>
-              <tr>
-                  <td colspan="2" class="blank"> </td>
-                  <td colspan="2" class="total-line balance">Balance Due</td>
-                  <td class="total-value balance"><div class="due">0.00</div></td>
-              </tr>
-          </tfoot>
-        </table>
-        
-        <div id="terms">
-            <h5>Terms</h5>
-            <textarea>Thank you for your reservation.</textarea>
-        </div>
+            <div class="input-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit">Login</button>
+        </form>
     </div>
-
-    <div id="historyModal" class="modal no-print">
-      <div class="modal-content">
-        <span class="close-button">&times;</span>
-        <h2>Invoice History</h2>
-        <ul id="invoice-list"></ul>
-      </div>
-    </div>
-
-    <script type="module" src="/src/main.js"></script>
-  </body>
+    <script type="module" src="/src/login.js"></script>
+</body>
 </html>
