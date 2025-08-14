@@ -1,14 +1,19 @@
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
-const cors = require('cors'); // <-- THIS IS THE CORRECTED LINE
+const cors = require('cors');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // --- MIDDLEWARE ---
-app.use(cors()); // Now this will work correctly
+app.use(cors());
 app.use(express.json());
+
+// >> 1. SERVE STATIC FRONTEND FILES <<
+// This points to the 'dist' folder created by the 'npm run build' command.
+app.use(express.static(path.join(__dirname, '../frontend/dist')));
+
 
 // --- DATABASE SETUP ---
 const dbPath = path.join(__dirname, 'invoice_database.db');
@@ -53,8 +58,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
 
 
 // --- API ROUTES ---
-
-// Get all invoices for history
+// Your API routes do not need to change. They will be served alongside your frontend.
 app.get('/api/invoices', (req, res) => {
     const sql = `SELECT invoice_id_text as id, customer_title as customer, date, total FROM invoices ORDER BY created_at DESC`;
     db.all(sql, [], (err, rows) => {
@@ -66,7 +70,6 @@ app.get('/api/invoices', (req, res) => {
     });
 });
 
-// Save a new invoice
 app.post('/api/invoices', (req, res) => {
     const { title, address, date, items, subtotal, total, amountPaid, balanceDue } = req.body;
     const invoiceIdText = `inv_${Date.now()}`;
@@ -83,7 +86,6 @@ app.post('/api/invoices', (req, res) => {
         const invoiceDbId = this.lastID;
         const itemSql = `INSERT INTO invoice_items (invoice_id, item_order, check_in, check_out, unit_cost, qty, price) VALUES (?, ?, ?, ?, ?, ?, ?)`;
 
-        // Use a loop to insert each item
         items.forEach(item => {
             const itemParams = [invoiceDbId, item.order, item.checkIn, item.checkOut, item.unitCost, item.qty, item.price];
             db.run(itemSql, itemParams, (itemErr) => {
@@ -97,8 +99,6 @@ app.post('/api/invoices', (req, res) => {
     });
 });
 
-
-// Load a single invoice by its text ID
 app.get('/api/invoices/:id', (req, res) => {
     const invoiceIdText = req.params.id;
 
@@ -132,6 +132,13 @@ app.get('/api/invoices/:id', (req, res) => {
             res.json(response);
         });
     });
+});
+
+// >> 2. CATCH-ALL ROUTE <<
+// This must be the last route. It ensures that if a user refreshes the page,
+// they are still served your app's main HTML file.
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
 });
 
 

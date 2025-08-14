@@ -1,7 +1,7 @@
 import './style.css';
 
 // --- Configuration ---
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+// const API_BASE_URL = import.meta.env.VITE_API_URL; // We no longer need this
 
 // --- Helper Functions ---
 function printToday() {
@@ -131,7 +131,8 @@ async function saveInvoice() {
     });
 
     try {
-        const response = await fetch(`${API_BASE_URL}/api/invoices`, {
+        // Use a relative path, since the API is on the same server.
+        const response = await fetch(`/api/invoices`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(invoiceData),
@@ -146,7 +147,8 @@ async function saveInvoice() {
 
 async function loadInvoiceById(invoiceId) {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/invoices/${invoiceId}`);
+        // Use a relative path.
+        const response = await fetch(`/api/invoices/${invoiceId}`);
         if (!response.ok) throw new Error('Invoice not found');
         
         const data = await response.json();
@@ -172,7 +174,8 @@ async function loadInvoiceById(invoiceId) {
 
 async function showHistory() {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/invoices`);
+        // Use a relative path.
+        const response = await fetch(`/api/invoices`);
         const invoices = await response.json();
         const list = document.getElementById('invoice-list');
         list.innerHTML = '';
