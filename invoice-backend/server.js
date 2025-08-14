@@ -43,6 +43,8 @@ const db = new sqlite3.Database(dbPath, (err) => {
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 invoice_id INTEGER,
                 item_order TEXT,
+                description_type TEXT,
+                description TEXT,
                 check_in TEXT,
                 check_out TEXT,
                 unit_cost REAL,
@@ -84,10 +86,10 @@ app.post('/api/invoices', (req, res) => {
         }
         
         const invoiceDbId = this.lastID;
-        const itemSql = `INSERT INTO invoice_items (invoice_id, item_order, check_in, check_out, unit_cost, qty, price) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+        const itemSql = `INSERT INTO invoice_items (invoice_id, item_order, description_type, description, check_in, check_out, unit_cost, qty, price) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
         items.forEach(item => {
-            const itemParams = [invoiceDbId, item.order, item.checkIn, item.checkOut, item.unitCost, item.qty, item.price];
+            const itemParams = [invoiceDbId, item.order, item.descriptionType, item.description, item.checkIn, item.checkOut, item.unitCost, item.qty, item.price];
             db.run(itemSql, itemParams, (itemErr) => {
                 if (itemErr) {
                     console.error("Error saving an invoice item:", itemErr.message);
@@ -113,7 +115,7 @@ app.get('/api/invoices/:id', (req, res) => {
             return;
         }
 
-        const itemsSql = `SELECT item_order as "order", check_in as "checkIn", check_out as "checkOut", unit_cost as "unitCost", qty, price FROM invoice_items WHERE invoice_id = ?`;
+        const itemsSql = `SELECT item_order as "order", description_type as "descriptionType", description, check_in as "checkIn", check_out as "checkOut", unit_cost as "unitCost", qty, price FROM invoice_items WHERE invoice_id = ?`;
         db.all(itemsSql, [invoice.id], (itemErr, items) => {
             if (itemErr) {
                 res.status(500).json({ "error": itemErr.message });

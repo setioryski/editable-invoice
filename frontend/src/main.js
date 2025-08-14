@@ -32,26 +32,35 @@ function getRoomDetails(roomType) {
 }
 
 // --- Core Invoice Logic ---
-function updatePrice(row) {
+function updatePrice(row, eventSource) {
     const cost = parseFloat(row.querySelector('.cost').value) || 0;
     let qty = 0;
+    const useText = row.querySelector('.desc-type-toggle').checked;
 
-    const checkin = row.querySelector('.checkin').value;
-    const checkout = row.querySelector('.checkout').value;
-
-    if (checkin && checkout) {
-        const timeDiff = new Date(checkout) - new Date(checkin);
-        const dayDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
-        qty = dayDiff > 0 ? dayDiff : 0;
-        row.querySelector('.qty').value = qty;
-    } else {
+    if (useText) {
+        // If using text, quantity is always manual
         qty = parseFloat(row.querySelector('.qty').value) || 0;
+    } else {
+        // If using dates, calculate quantity from date diff
+        const checkin = row.querySelector('.checkin').value;
+        const checkout = row.querySelector('.checkout').value;
+        
+        if ((eventSource === 'checkin' || eventSource === 'checkout') && checkin && checkout) {
+             const timeDiff = new Date(checkout) - new Date(checkin);
+             const dayDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+             qty = dayDiff > 0 ? dayDiff : 0;
+             row.querySelector('.qty').value = qty;
+        } else {
+            // Otherwise, use the manually entered quantity
+            qty = parseFloat(row.querySelector('.qty').value) || 0;
+        }
     }
     
     const price = cost * qty;
     row.querySelector('.price').textContent = roundNumber(price);
     updateTotal();
 }
+
 
 function updateTotal() {
     let subtotal = 0;
@@ -76,6 +85,8 @@ function createNewItemRow(item = {}) {
     const newRow = document.createElement('tr');
     newRow.classList.add('item-row');
 
+    const useDates = item.descriptionType === 'dates' || !item.descriptionType;
+
     newRow.innerHTML = `
         <td class="item-name">
             <div class="delete-wpr">
@@ -84,12 +95,20 @@ function createNewItemRow(item = {}) {
             </div>
         </td>
         <td class="description">
-            <input type="date" class="checkin" value="${dateToYMD(item.checkIn || new Date())}" style="width: 48%;">
-            <input type="date" class="checkout" value="${dateToYMD(item.checkOut || '')}" style="width: 48%;">
+            <div class="desc-toggle">
+                <label>
+                    <input type="checkbox" class="desc-type-toggle" ${useDates ? '' : 'checked'}> Use Text
+                </label>
+            </div>
+            <textarea class="item-description" placeholder="Additional description" style="display: ${useDates ? 'none' : 'block'};">${item.description || ''}</textarea>
+            <div class="date-inputs" style="display: ${useDates ? 'flex' : 'none'};">
+                <input type="date" class="checkin" value="${dateToYMD(item.checkIn || new Date())}" style="width: 48%;">
+                <input type="date" class="checkout" value="${dateToYMD(item.checkOut || '')}" style="width: 48%;">
+            </div>
         </td>
-        <td class="text-right"><textarea class="cost">${item.unitCost || 0}</textarea></td>
-        <td class="text-right"><textarea class="qty">${item.qty || 1}</textarea></td>
-        <td class="text-right"><span class="price">${roundNumber(item.price || 0)}</span></td>
+        <td class="text-center"><textarea class="cost">${item.unitCost || 0}</textarea></td>
+        <td class="text-center"><textarea class="qty">${item.qty || 1}</textarea></td>
+        <td class="text-center"><span class="price">${roundNumber(item.price || 0)}</span></td>
     `;
 
     newRow.querySelector('.delete').addEventListener('click', (e) => {
@@ -98,8 +117,24 @@ function createNewItemRow(item = {}) {
         updateTotal();
     });
     
-    newRow.querySelectorAll('.cost, .qty, .checkin, .checkout').forEach(input => {
-        input.addEventListener('input', () => updatePrice(newRow));
+    newRow.querySelector('.cost').addEventListener('input', () => updatePrice(newRow, 'cost'));
+    newRow.querySelector('.qty').addEventListener('input', () => updatePrice(newRow, 'qty'));
+    newRow.querySelector('.checkin').addEventListener('input', () => updatePrice(newRow, 'checkin'));
+    newRow.querySelector('.checkout').addEventListener('input', () => updatePrice(newRow, 'checkout'));
+
+
+    const descToggle = newRow.querySelector('.desc-type-toggle');
+    const descText = newRow.querySelector('.item-description');
+    const dateInputs = newRow.querySelector('.date-inputs');
+
+    descToggle.addEventListener('change', () => {
+        if (descToggle.checked) {
+            descText.style.display = 'block';
+            dateInputs.style.display = 'none';
+        } else {
+            descText.style.display = 'none';
+            dateInputs.style.display = 'flex';
+        }
     });
 
     itemsTbody.appendChild(newRow);
@@ -120,10 +155,13 @@ async function saveInvoice() {
     };
 
     document.querySelectorAll('#items .item-row').forEach(row => {
+        const useText = row.querySelector('.desc-type-toggle').checked;
         invoiceData.items.push({
             order: row.querySelector('.item-name textarea').value,
-            checkIn: row.querySelector('.checkin').value,
-            checkOut: row.querySelector('.checkout').value,
+            descriptionType: useText ? 'text' : 'dates',
+            description: useText ? row.querySelector('.item-description').value : '',
+            checkIn: useText ? '' : row.querySelector('.checkin').value,
+            checkOut: useText ? '' : row.querySelector('.checkout').value,
             unitCost: row.querySelector('.cost').value,
             qty: row.querySelector('.qty').value,
             price: row.querySelector('.price').textContent
@@ -209,10 +247,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('save-btn').addEventListener('click', saveInvoice);
     document.getElementById('print-btn').addEventListener('click', () => window.print());
     document.getElementById('history-btn').addEventListener('click', showHistory);
-    document.getElementById('load-btn').addEventListener('click', () => {
-        const id = prompt("Please enter the Invoice ID to load:");
-        if (id) loadInvoiceById(id);
-    });
 
     document.getElementById('addrow').addEventListener('click', (e) => {
         e.preventDefault();
