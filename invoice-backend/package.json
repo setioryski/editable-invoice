@@ -1,4 +1,4 @@
-﻿{
+{
   "name": "invoice-backend",
   "version": "1.0.0",
   "description": "Backend server for the editable invoice application",
@@ -10,6 +10,7 @@
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.19.2",
+    "express-session": "^1.18.2",
     "sqlite3": "^5.1.7"
   },
   "author": "",

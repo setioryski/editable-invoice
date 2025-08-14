@@ -1,4 +1,5 @@
 const express = require('express');
+const session = require('express-session');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const cors = require('cors');
@@ -10,8 +11,40 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// >> 1. SERVE STATIC FRONTEND FILES <<
-// This points to the 'dist' folder created by the 'npm run build' command.
+// Session Middleware Setup
+app.use(session({
+  secret: 'a-very-secret-key-that-should-be-changed',
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: false } // Set to true if using HTTPS
+}));
+
+// API Login Endpoint
+app.post('/api/login', (req, res) => {
+  const { username, password } = req.body;
+  if (username === 'admin' && password === 'admin') {
+    req.session.loggedIn = true;
+    res.status(200).json({ message: 'Login successful' });
+  } else {
+    res.status(401).json({ message: 'Invalid credentials' });
+  }
+});
+
+// Middleware to protect routes
+const requireLogin = (req, res, next) => {
+  if (req.session.loggedIn) {
+    next(); // User is logged in, proceed
+  } else {
+    res.redirect('/'); // User is not logged in, redirect to login page
+  }
+};
+
+// Protected route for the invoice page
+app.get('/invoice.html', requireLogin, (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/dist/invoice.html'));
+});
+
+// Serve static files (CSS, client-side JS, images)
 app.use(express.static(path.join(__dirname, '../frontend/dist')));
 
 
@@ -60,8 +93,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
 
 
 // --- API ROUTES ---
-// Your API routes do not need to change. They will be served alongside your frontend.
-app.get('/api/invoices', (req, res) => {
+app.get('/api/invoices', requireLogin, (req, res) => {
     const sql = `SELECT invoice_id_text as id, customer_title as customer, date, total FROM invoices ORDER BY created_at DESC`;
     db.all(sql, [], (err, rows) => {
         if (err) {
@@ -72,7 +104,7 @@ app.get('/api/invoices', (req, res) => {
     });
 });
 
-app.post('/api/invoices', (req, res) => {
+app.post('/api/invoices', requireLogin, (req, res) => {
     const { title, address, date, items, subtotal, total, amountPaid, balanceDue } = req.body;
     const invoiceIdText = `inv_${Date.now()}`;
 
@@ -101,7 +133,7 @@ app.post('/api/invoices', (req, res) => {
     });
 });
 
-app.get('/api/invoices/:id', (req, res) => {
+app.get('/api/invoices/:id', requireLogin, (req, res) => {
     const invoiceIdText = req.params.id;
 
     const invoiceSql = `SELECT * FROM invoices WHERE invoice_id_text = ?`;
@@ -136,7 +168,7 @@ app.get('/api/invoices/:id', (req, res) => {
     });
 });
 
-app.delete('/api/invoices/:id', (req, res) => {
+app.delete('/api/invoices/:id', requireLogin, (req, res) => {
     const invoiceIdText = req.params.id;
 
     const findInvoiceSql = `SELECT id FROM invoices WHERE invoice_id_text = ?`;
@@ -170,9 +202,7 @@ app.delete('/api/invoices/:id', (req, res) => {
     });
 });
 
-// >> 2. CATCH-ALL ROUTE <<
-// This must be the last route. It ensures that if a user refreshes the page,
-// they are still served your app's main HTML file.
+// This will serve index.html (the login page) for any other GET requests.
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
 });
