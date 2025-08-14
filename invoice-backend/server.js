@@ -1,77 +1,141 @@
 const express = require('express');
-const fs = require('fs');
+const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
-const cors = require('cors'); // <-- ADD THIS LINE
+const cors = require('cors'); // <-- THIS IS THE CORRECTED LINE
+
 const app = express();
 const PORT = 3000;
 
 // --- MIDDLEWARE ---
-app.use(cors()); // <-- ADD THIS LINE to enable all CORS requests
+app.use(cors()); // Now this will work correctly
 app.use(express.json());
 
-// Path to your JSON file acting as a database
-const dbPath = path.join(__dirname, 'db.json');
+// --- DATABASE SETUP ---
+const dbPath = path.join(__dirname, 'invoice_database.db');
+const db = new sqlite3.Database(dbPath, (err) => {
+    if (err) {
+        console.error('Error opening database', err.message);
+    } else {
+        console.log('Connected to the SQLite database.');
+        // Create tables if they don't exist
+        db.serialize(() => {
+            db.run(`CREATE TABLE IF NOT EXISTS invoices (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                invoice_id_text TEXT UNIQUE,
+                customer_title TEXT,
+                address TEXT,
+                date TEXT,
+                subtotal REAL,
+                total REAL,
+                amount_paid REAL,
+                balance_due REAL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )`, (err) => {
+                if(err) console.error("Error creating invoices table", err.message);
+            });
 
-// Helper function to read the database
-function readDb() {
-    if (!fs.existsSync(dbPath)) {
-        return {};
+            db.run(`CREATE TABLE IF NOT EXISTS invoice_items (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                invoice_id INTEGER,
+                item_order TEXT,
+                check_in TEXT,
+                check_out TEXT,
+                unit_cost REAL,
+                qty INTEGER,
+                price REAL,
+                FOREIGN KEY(invoice_id) REFERENCES invoices(id)
+            )`, (err) => {
+                if(err) console.error("Error creating invoice_items table", err.message);
+            });
+        });
     }
-    const data = fs.readFileSync(dbPath, 'utf8');
-    if (data.length === 0) {
-        return {};
-    }
-    return JSON.parse(data);
-}
+});
 
-// Helper function to write to the database
-function writeDb(data) {
-    fs.writeFileSync(dbPath, JSON.stringify(data, null, 2));
-}
 
 // --- API ROUTES ---
 
-// NEW: API endpoint to get all invoices for history
+// Get all invoices for history
 app.get('/api/invoices', (req, res) => {
-    const db = readDb();
-    // Transform the db object into an array for easier use on the frontend
-    const invoicesArray = Object.keys(db).map(id => {
-        return {
-            id: id,
-            customer: db[id].title,
-            date: db[id].date,
-            total: db[id].total
-        };
+    const sql = `SELECT invoice_id_text as id, customer_title as customer, date, total FROM invoices ORDER BY created_at DESC`;
+    db.all(sql, [], (err, rows) => {
+        if (err) {
+            res.status(500).json({ "error": err.message });
+            return;
+        }
+        res.json(rows);
     });
-    // Sort by date, newest first
-    invoicesArray.sort((a, b) => new Date(b.date) - new Date(a.date));
-    res.json(invoicesArray);
 });
 
-// API endpoint to save an invoice
+// Save a new invoice
 app.post('/api/invoices', (req, res) => {
-    const db = readDb();
-    const newInvoice = req.body;
-    const invoiceId = `inv_${Date.now()}`;
-    db[invoiceId] = newInvoice;
-    writeDb(db);
-    console.log(`Invoice ${invoiceId} saved.`);
-    res.status(201).json({ message: 'Invoice saved successfully!', invoiceId: invoiceId });
+    const { title, address, date, items, subtotal, total, amountPaid, balanceDue } = req.body;
+    const invoiceIdText = `inv_${Date.now()}`;
+
+    const invoiceSql = `INSERT INTO invoices (invoice_id_text, customer_title, address, date, subtotal, total, amount_paid, balance_due) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+    const invoiceParams = [invoiceIdText, title, address, date, subtotal, total, amountPaid, balanceDue];
+
+    db.run(invoiceSql, invoiceParams, function(err) {
+        if (err) {
+            res.status(500).json({ "error": err.message });
+            return;
+        }
+        
+        const invoiceDbId = this.lastID;
+        const itemSql = `INSERT INTO invoice_items (invoice_id, item_order, check_in, check_out, unit_cost, qty, price) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+
+        // Use a loop to insert each item
+        items.forEach(item => {
+            const itemParams = [invoiceDbId, item.order, item.checkIn, item.checkOut, item.unitCost, item.qty, item.price];
+            db.run(itemSql, itemParams, (itemErr) => {
+                if (itemErr) {
+                    console.error("Error saving an invoice item:", itemErr.message);
+                }
+            });
+        });
+
+        res.status(201).json({ message: 'Invoice saved successfully!', invoiceId: invoiceIdText });
+    });
 });
 
-// API endpoint to load an invoice by its ID
+
+// Load a single invoice by its text ID
 app.get('/api/invoices/:id', (req, res) => {
-    const db = readDb();
-    const invoice = db[req.params.id];
-    if (invoice) {
-        res.json(invoice);
-    } else {
-        res.status(404).json({ message: 'Invoice not found' });
-    }
+    const invoiceIdText = req.params.id;
+
+    const invoiceSql = `SELECT * FROM invoices WHERE invoice_id_text = ?`;
+    db.get(invoiceSql, [invoiceIdText], (err, invoice) => {
+        if (err) {
+            res.status(500).json({ "error": err.message });
+            return;
+        }
+        if (!invoice) {
+            res.status(404).json({ "message": "Invoice not found" });
+            return;
+        }
+
+        const itemsSql = `SELECT item_order as "order", check_in as "checkIn", check_out as "checkOut", unit_cost as "unitCost", qty, price FROM invoice_items WHERE invoice_id = ?`;
+        db.all(itemsSql, [invoice.id], (itemErr, items) => {
+            if (itemErr) {
+                res.status(500).json({ "error": itemErr.message });
+                return;
+            }
+            const response = {
+                title: invoice.customer_title,
+                address: invoice.address,
+                date: invoice.date,
+                subtotal: invoice.subtotal,
+                total: invoice.total,
+                amountPaid: invoice.amount_paid,
+                balanceDue: invoice.balance_due,
+                items: items
+            };
+            res.json(response);
+        });
+    });
 });
+
 
 // --- START SERVER ---
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
-    console.log('CORS is now enabled.');
 });
