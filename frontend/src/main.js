@@ -225,17 +225,42 @@ async function showHistory() {
                 const li = document.createElement('li');
                 li.dataset.id = invoice.id;
                 li.innerHTML = `
-                    <span class="customer">${invoice.customer || 'No Title'}</span>
-                    <span>Date: ${invoice.date}</span>
-                    <span>Total: ${roundNumber(invoice.total)}</span>
+                    <div class="invoice-info">
+                        <span class="customer">${invoice.customer || 'No Title'}</span>
+                        <span>Date: ${invoice.date}</span>
+                        <span>Total: ${roundNumber(invoice.total)}</span>
+                    </div>
+                    <button class="delete-invoice-btn">Delete</button>
                 `;
-                li.addEventListener('click', () => loadInvoiceById(invoice.id));
+                li.querySelector('.invoice-info').addEventListener('click', () => loadInvoiceById(invoice.id));
+                li.querySelector('.delete-invoice-btn').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    deleteInvoice(invoice.id);
+                });
                 list.appendChild(li);
             });
         }
         document.getElementById('historyModal').style.display = 'block';
     } catch (error) {
         alert('Could not fetch invoice history.');
+    }
+}
+
+async function deleteInvoice(invoiceId) {
+    if (!confirm('Are you sure you want to delete this invoice?')) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/invoices/${invoiceId}`, {
+            method: 'DELETE',
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'Failed to delete.');
+        alert(data.message);
+        showHistory(); // Refresh the history list
+    } catch (error) {
+        alert('Failed to delete invoice.\n' + error.message);
     }
 }
 

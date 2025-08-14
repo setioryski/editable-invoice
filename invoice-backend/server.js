@@ -136,6 +136,40 @@ app.get('/api/invoices/:id', (req, res) => {
     });
 });
 
+app.delete('/api/invoices/:id', (req, res) => {
+    const invoiceIdText = req.params.id;
+
+    const findInvoiceSql = `SELECT id FROM invoices WHERE invoice_id_text = ?`;
+    db.get(findInvoiceSql, [invoiceIdText], (err, row) => {
+        if (err) {
+            res.status(500).json({ "error": err.message });
+            return;
+        }
+        if (!row) {
+            res.status(404).json({ "message": "Invoice not found" });
+            return;
+        }
+
+        const invoiceDbId = row.id;
+        const deleteItemsSql = `DELETE FROM invoice_items WHERE invoice_id = ?`;
+        db.run(deleteItemsSql, invoiceDbId, function(err) {
+            if (err) {
+                res.status(500).json({ "error": err.message });
+                return;
+            }
+
+            const deleteInvoiceSql = `DELETE FROM invoices WHERE id = ?`;
+            db.run(deleteInvoiceSql, invoiceDbId, function(err) {
+                if (err) {
+                    res.status(500).json({ "error": err.message });
+                    return;
+                }
+                res.json({ "message": "Invoice deleted successfully" });
+            });
+        });
+    });
+});
+
 // >> 2. CATCH-ALL ROUTE <<
 // This must be the last route. It ensures that if a user refreshes the page,
 // they are still served your app's main HTML file.
