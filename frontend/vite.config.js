@@ -9,7 +9,7 @@ export default defineConfig({
       
       // Add this rule to proxy the invoice page
       // This forces the backend's authentication check to run
-      '/invoice.html': 'http://localhost:3000',
+    //   '/invoice.html': 'http://localhost:3000',
     },
   },
   build: {
