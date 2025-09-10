@@ -1,9 +1,34 @@
 import './style.css';
 
-// --- Configuration ---
-// const API_BASE_URL = import.meta.env.VITE_API_URL; // We no longer need this
-
 // --- Helper Functions ---
+
+/**
+ * Formats a number into a currency string (e.g., 1000000 -> "1.000.000,00").
+ * @param {number} num The number to format.
+ * @returns {string} The formatted currency string.
+ */
+function formatCurrency(num) {
+    if (isNaN(num)) num = 0;
+    return new Intl.NumberFormat('id-ID', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }).format(num);
+}
+
+/**
+ * Parses a formatted currency string back into a number (e.g., "1.000.000,00" -> 1000000).
+ * @param {string} str The formatted string to parse.
+ * @returns {number} The parsed number.
+ */
+function parseFormattedNumber(str) {
+    if (typeof str !== 'string') {
+        return parseFloat(str) || 0;
+    }
+    // Remove thousand separators (.) and replace decimal comma (,) with a dot (.)
+    const raw = str.replace(/\./g, '').replace(/,/g, '.');
+    return parseFloat(raw) || 0;
+}
+
 function printToday() {
     const date = new Date();
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -13,11 +38,6 @@ function dateToYMD(dateString) {
     const date = new Date(dateString);
     if (isNaN(date)) return '';
     return date.toLocaleDateString('en-CA'); // YYYY-MM-DD format
-}
-
-function roundNumber(num, decimals = 2) {
-    const p = Math.pow(10, decimals);
-    return (Math.round(num * p) / p).toFixed(decimals);
 }
 
 function getRoomDetails(roomType) {
@@ -33,31 +53,27 @@ function getRoomDetails(roomType) {
 
 // --- Core Invoice Logic ---
 function updatePrice(row, eventSource) {
-    const cost = parseFloat(row.querySelector('.cost').value) || 0;
+    const cost = parseFormattedNumber(row.querySelector('.cost').value);
     let qty = 0;
     const useText = row.querySelector('.desc-type-toggle').checked;
 
     if (useText) {
-        // If using text, quantity is always manual
         qty = parseFloat(row.querySelector('.qty').value) || 0;
     } else {
-        // If using dates, calculate quantity from date diff
         const checkin = row.querySelector('.checkin').value;
         const checkout = row.querySelector('.checkout').value;
-        
         if ((eventSource === 'checkin' || eventSource === 'checkout') && checkin && checkout) {
              const timeDiff = new Date(checkout) - new Date(checkin);
              const dayDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
              qty = dayDiff > 0 ? dayDiff : 0;
              row.querySelector('.qty').value = qty;
         } else {
-            // Otherwise, use the manually entered quantity
             qty = parseFloat(row.querySelector('.qty').value) || 0;
         }
     }
     
     const price = cost * qty;
-    row.querySelector('.price').textContent = roundNumber(price);
+    row.querySelector('.price').textContent = formatCurrency(price);
     updateTotal();
 }
 
@@ -65,19 +81,28 @@ function updatePrice(row, eventSource) {
 function updateTotal() {
     let subtotal = 0;
     document.querySelectorAll('#items tbody tr.item-row').forEach(row => {
-        subtotal += parseFloat(row.querySelector('.price').textContent) || 0;
+        subtotal += parseFormattedNumber(row.querySelector('.price').textContent);
     });
-    document.getElementById('subtotal').textContent = roundNumber(subtotal);
-    document.getElementById('total').textContent = roundNumber(subtotal);
+    document.getElementById('subtotal').textContent = formatCurrency(subtotal);
+    document.getElementById('total').textContent = formatCurrency(subtotal);
     updateBalance();
 }
 
 function updateBalance() {
-    const total = parseFloat(document.getElementById('total').textContent) || 0;
-    const paid = parseFloat(document.getElementById('paid').value) || 0;
+    const total = parseFormattedNumber(document.getElementById('total').textContent);
+    const paid = parseFormattedNumber(document.getElementById('paid').value);
     let due = total - paid;
     if (due < 0) due = 0;
-    document.querySelector('.due').textContent = roundNumber(due);
+    document.querySelector('.due').textContent = formatCurrency(due);
+}
+
+function updateItemNumbers() {
+    document.querySelectorAll('#items tbody tr.item-row').forEach((row, index) => {
+        const itemNumberSpan = row.querySelector('.item-number');
+        if (itemNumberSpan) {
+            itemNumberSpan.textContent = `${index + 1}.`;
+        }
+    });
 }
 
 function createNewItemRow(item = {}) {
@@ -86,11 +111,14 @@ function createNewItemRow(item = {}) {
     newRow.classList.add('item-row');
 
     const useDates = item.descriptionType === 'dates' || !item.descriptionType;
+    const initialCost = item.unitCost || 0;
+    const initialPrice = item.price || 0;
 
     newRow.innerHTML = `
         <td class="item-name">
             <div class="delete-wpr">
                 <a href="#" class="delete" title="Remove row">X</a>
+                <span class="item-number"></span>
                 <textarea>${item.order || 'New Item'}</textarea>
             </div>
         </td>
@@ -102,26 +130,33 @@ function createNewItemRow(item = {}) {
             </div>
             <textarea class="item-description" placeholder="Additional description" style="display: ${useDates ? 'none' : 'block'};">${item.description || ''}</textarea>
             <div class="date-inputs" style="display: ${useDates ? 'flex' : 'none'};">
-                <input type="date" class="checkin" value="${dateToYMD(item.checkIn || new Date())}" style="width: 48%;">
-                <input type="date" class="checkout" value="${dateToYMD(item.checkOut || '')}" style="width: 48%;">
+                <input type="date" class="checkin" value="${dateToYMD(item.checkIn || new Date())}">
+                <span class="date-separator"> - </span>
+                <input type="date" class="checkout" value="${dateToYMD(item.checkOut || '')}">
             </div>
         </td>
-        <td class="text-center"><textarea class="cost">${item.unitCost || 0}</textarea></td>
-        <td class="text-center"><textarea class="qty">${item.qty || 1}</textarea></td>
-        <td class="text-center"><span class="price">${roundNumber(item.price || 0)}</span></td>
+        <td class="text-center cost-col"><textarea class="cost">${formatCurrency(initialCost)}</textarea></td>
+        <td class="text-center qty-col"><textarea class="qty">${item.qty || 1}</textarea></td>
+        <td class="text-center"><span class="price">${formatCurrency(initialPrice)}</span></td>
     `;
 
+    // Add event listeners for formatting editable currency fields
+    const costInput = newRow.querySelector('.cost');
+    costInput.addEventListener('blur', (e) => {
+        e.target.value = formatCurrency(parseFormattedNumber(e.target.value));
+    });
+    
     newRow.querySelector('.delete').addEventListener('click', (e) => {
         e.preventDefault();
         newRow.remove();
         updateTotal();
+        updateItemNumbers();
     });
     
-    newRow.querySelector('.cost').addEventListener('input', () => updatePrice(newRow, 'cost'));
+    costInput.addEventListener('input', () => updatePrice(newRow, 'cost'));
     newRow.querySelector('.qty').addEventListener('input', () => updatePrice(newRow, 'qty'));
     newRow.querySelector('.checkin').addEventListener('input', () => updatePrice(newRow, 'checkin'));
     newRow.querySelector('.checkout').addEventListener('input', () => updatePrice(newRow, 'checkout'));
-
 
     const descToggle = newRow.querySelector('.desc-type-toggle');
     const descText = newRow.querySelector('.item-description');
@@ -148,10 +183,10 @@ async function saveInvoice() {
         address: document.getElementById('address').value,
         date: document.getElementById('date').value,
         items: [],
-        subtotal: document.getElementById('subtotal').textContent,
-        total: document.getElementById('total').textContent,
-        amountPaid: document.getElementById('paid').value,
-        balanceDue: document.querySelector('.due').textContent
+        subtotal: parseFormattedNumber(document.getElementById('subtotal').textContent),
+        total: parseFormattedNumber(document.getElementById('total').textContent),
+        amountPaid: parseFormattedNumber(document.getElementById('paid').value),
+        balanceDue: parseFormattedNumber(document.querySelector('.due').textContent)
     };
 
     document.querySelectorAll('#items .item-row').forEach(row => {
@@ -162,14 +197,13 @@ async function saveInvoice() {
             description: useText ? row.querySelector('.item-description').value : '',
             checkIn: useText ? '' : row.querySelector('.checkin').value,
             checkOut: useText ? '' : row.querySelector('.checkout').value,
-            unitCost: row.querySelector('.cost').value,
+            unitCost: parseFormattedNumber(row.querySelector('.cost').value),
             qty: row.querySelector('.qty').value,
-            price: row.querySelector('.price').textContent
+            price: parseFormattedNumber(row.querySelector('.price').textContent)
         });
     });
 
     try {
-        // Use a relative path, since the API is on the same server.
         const response = await fetch(`/api/invoices`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -185,7 +219,6 @@ async function saveInvoice() {
 
 async function loadInvoiceById(invoiceId) {
     try {
-        // Use a relative path.
         const response = await fetch(`/api/invoices/${invoiceId}`);
         if (!response.ok) throw new Error('Invoice not found');
         
@@ -194,7 +227,7 @@ async function loadInvoiceById(invoiceId) {
         document.getElementById('customer-title').value = data.title;
         document.getElementById('address').value = data.address;
         document.getElementById('date').value = data.date;
-        document.getElementById('paid').value = data.amountPaid;
+        document.getElementById('paid').value = formatCurrency(data.amountPaid);
 
         document.querySelector('#items tbody').innerHTML = '';
         data.items.forEach(item => {
@@ -203,6 +236,7 @@ async function loadInvoiceById(invoiceId) {
         });
         
         updateTotal();
+        updateItemNumbers();
         document.getElementById('historyModal').style.display = 'none';
 
     } catch (error) {
@@ -212,7 +246,6 @@ async function loadInvoiceById(invoiceId) {
 
 async function showHistory() {
     try {
-        // Use a relative path.
         const response = await fetch(`/api/invoices`);
         const invoices = await response.json();
         const list = document.getElementById('invoice-list');
@@ -228,7 +261,7 @@ async function showHistory() {
                     <div class="invoice-info">
                         <span class="customer">${invoice.customer || 'No Title'}</span>
                         <span>Date: ${invoice.date}</span>
-                        <span>Total: ${roundNumber(invoice.total)}</span>
+                        <span>Total: ${formatCurrency(invoice.total)}</span>
                     </div>
                     <button class="delete-invoice-btn">Delete</button>
                 `;
@@ -250,20 +283,16 @@ async function deleteInvoice(invoiceId) {
     if (!confirm('Are you sure you want to delete this invoice?')) {
         return;
     }
-
     try {
-        const response = await fetch(`/api/invoices/${invoiceId}`, {
-            method: 'DELETE',
-        });
+        const response = await fetch(`/api/invoices/${invoiceId}`, { method: 'DELETE' });
         const data = await response.json();
         if (!response.ok) throw new Error(data.message || 'Failed to delete.');
         alert(data.message);
-        showHistory(); // Refresh the history list
+        showHistory();
     } catch (error) {
         alert('Failed to delete invoice.\n' + error.message);
     }
 }
-
 
 // --- Event Listeners Setup ---
 document.addEventListener('DOMContentLoaded', () => {
@@ -279,10 +308,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const details = getRoomDetails(roomType);
         const newRow = createNewItemRow({ order: details.orderText, unitCost: details.price, qty: 1 });
         updatePrice(newRow);
+        updateItemNumbers();
     });
 
-    document.getElementById('paid').addEventListener('input', updateBalance);
-
+    const paidInput = document.getElementById('paid');
+    paidInput.addEventListener('blur', (e) => {
+        e.target.value = formatCurrency(parseFormattedNumber(e.target.value));
+        updateBalance();
+    });
+    paidInput.addEventListener('input', updateBalance);
+    
     document.querySelector('.close-button').addEventListener('click', () => {
         document.getElementById('historyModal').style.display = 'none';
     });
@@ -294,4 +329,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const initialRow = createNewItemRow({ order: 'Standard Room', unitCost: 250000, qty: 1 });
     updatePrice(initialRow);
+    updateItemNumbers();
+    paidInput.value = formatCurrency(0); // Format initial paid amount
 });
