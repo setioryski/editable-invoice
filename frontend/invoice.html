@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Editable Invoice</title>
+    <link rel="stylesheet" href="src/style.css" />
   </head>
   <body>
     <div id="page-wrap">
@@ -47,6 +48,16 @@ Phone: 0822 5510-0105</textarea>
                 <option value="deluxe_extrabed">Deluxe Room + Extra Bed</option>
             </select>
             <a href="#" id="addrow" title="Add a row">Add a row</a>
+        </div>
+        
+        <!-- New Description Controls -->
+        <div class="no-print" id="description-controls" style="margin: 20px 0; text-align: center; display: none;">
+            <label for="check-in-date">Check-in:</label>
+            <input type="date" id="check-in-date">
+            <label for="check-out-date">Check-out:</label>
+            <input type="date" id="check-out-date">
+            <label for="use-text-desc" style="margin-left: 15px;">Use Text:</label>
+            <input type="checkbox" id="use-text-desc">
         </div>
 
         <table id="items">
