@@ -28,7 +28,7 @@ table td, table th { border: 1px solid black; padding: 5px; text-align: center; 
 #header { width: 100%; margin: 20px 0; background: #222; text-align: center; color: white; font: bold 15px Helvetica, Sans-Serif; text-decoration: uppercase; letter-spacing: 20px; padding: 8px 0px; }
 #identity { display: flex; justify-content: space-between; align-items: flex-start; }
 #address { width: 250px; min-height: 100px; text-align: left;}
-#logo { text-align: center; margin: 20px 0; }
+#logo { text-align: right; margin: 20px 0; }
 #logo img { max-width: 800px; height: auto; }
 
 /* Customer and Meta */

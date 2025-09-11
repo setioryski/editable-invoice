@@ -299,8 +299,52 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('date').value = printToday();
 
     document.getElementById('save-btn').addEventListener('click', saveInvoice);
-    document.getElementById('print-btn').addEventListener('click', () => window.print());
     document.getElementById('history-btn').addEventListener('click', showHistory);
+
+    // --- New, More Reliable Print Handling ---
+    const originalTitle = document.title;
+    document.getElementById('print-btn').addEventListener('click', () => {
+        let newTitle = "Invoice"; // Default title
+
+        // Get customer name and replace spaces with underscores
+        const customerName = document.getElementById('customer-title').value.trim().replace(/\s+/g, '_');
+        
+        // Find the first item row to get dates
+        const firstItemRow = document.querySelector('.item-row');
+        
+        if (firstItemRow) {
+            const checkinInput = firstItemRow.querySelector('.checkin');
+            const checkoutInput = firstItemRow.querySelector('.checkout');
+
+            if (checkinInput && checkinInput.value && checkoutInput && checkoutInput.value) {
+                // Helper to format date from YYYY-MM-DD to DD-MM
+                const formatDate = (dateString) => {
+                    const parts = dateString.split('-'); // [YYYY, MM, DD]
+                    return `${parts[2]}-${parts[1]}`; // Returns DD-MM
+                };
+
+                const checkinStr = formatDate(checkinInput.value);
+                const checkoutStr = formatDate(checkoutInput.value);
+                const year = checkinInput.value.split('-')[0];
+
+                newTitle = `${customerName}_${checkinStr}-${checkoutStr}_${year}`;
+            } else if (customerName) {
+                 newTitle = `${customerName}_Invoice`; // Fallback if dates are missing
+            }
+        } else if (customerName) {
+            newTitle = `${customerName}_Invoice`; // Fallback if no items exist
+        }
+
+        // Set the title, print, and then restore it
+        document.title = newTitle;
+        window.print();
+
+        // Restore the original title after a short delay
+        setTimeout(() => {
+            document.title = originalTitle;
+        }, 1000);
+    });
+
 
     document.getElementById('addrow').addEventListener('click', (e) => {
         e.preventDefault();
