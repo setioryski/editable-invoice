@@ -53,12 +53,6 @@ table td, table th { border: 1px solid black; padding: 5px; text-align: center; 
 #items .cost-col { width: 120px; white-space: nowrap; }
 #items .price-col { width: 120px; white-space: nowrap; }
 
-/* HIDE CALENDAR ICON FROM DATEPICKER */
-#items input[type="date"]::-webkit-calendar-picker-indicator {
-    display: none;
-    -webkit-appearance: none;
-}
-
 #items td.total-line { border-right: 0; text-align: right; font-weight: bold; padding-right: 10px; }
 #items td.total-value { 
     border-left: 0; 
