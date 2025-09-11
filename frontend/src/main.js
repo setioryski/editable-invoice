@@ -3,15 +3,15 @@ import './style.css';
 // --- Helper Functions ---
 
 /**
- * Formats a number into a currency string (e.g., 1000000 -> "1.000.000,00").
+ * Formats a number into a currency string (e.g., 1000000 -> "1.000.000").
  * @param {number} num The number to format.
  * @returns {string} The formatted currency string.
  */
 function formatCurrency(num) {
     if (isNaN(num)) num = 0;
     return new Intl.NumberFormat('id-ID', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
     }).format(num);
 }
 
@@ -137,7 +137,7 @@ function createNewItemRow(item = {}) {
         </td>
         <td class="text-center cost-col"><textarea class="cost">${formatCurrency(initialCost)}</textarea></td>
         <td class="text-center qty-col"><textarea class="qty">${item.qty || 1}</textarea></td>
-        <td class="text-center"><span class="price">${formatCurrency(initialPrice)}</span></td>
+        <td class="text-center price-col"><span class="price">${formatCurrency(initialPrice)}</span></td>
     `;
 
     // Add event listeners for formatting editable currency fields
