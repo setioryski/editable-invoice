@@ -9,6 +9,7 @@
   <body>
     <div id="page-wrap">
         <div class="controls no-print">
+            <button id="settings-btn">Settings</button>
             <button id="save-btn">Save to Database</button>
             <button id="history-btn">View History</button>
             <button id="print-btn">Print Invoice</button>
@@ -50,15 +51,6 @@ Phone: 0822 5510-0105</textarea>
             <a href="#" id="addrow" title="Add a row">Add a row</a>
         </div>
         
-        <div class="no-print" id="description-controls" style="margin: 20px 0; text-align: center; display: none;">
-            <label for="check-in-date">Check-in:</label>
-            <input type="date" id="check-in-date">
-            <label for="check-out-date">Check-out:</label>
-            <input type="date" id="check-out-date">
-            <label for="use-text-desc" style="margin-left: 15px;">Use Text:</label>
-            <input type="checkbox" id="use-text-desc">
-        </div>
-
         <table id="items">
           <thead>
               <tr>
@@ -75,22 +67,22 @@ Phone: 0822 5510-0105</textarea>
               <tr>
                   <td colspan="2" class="blank"> </td>
                   <td colspan="2" class="total-line">Subtotal</td>
-                  <td class="total-value"><div id="subtotal">0.00</div></td>
+                  <td class="total-value"><div id="subtotal">0</div></td>
               </tr>
               <tr>
                   <td colspan="2" class="blank"> </td>
                   <td colspan="2" class="total-line">Total</td>
-                  <td class="total-value"><div id="total">0.00</div></td>
+                  <td class="total-value"><div id="total">0</div></td>
               </tr>
               <tr>
                   <td colspan="2" class="blank"> </td>
                   <td colspan="2" class="total-line">Amount Paid</td>
-                  <td class="total-value"><textarea id="paid">0.00</textarea></td>
+                  <td class="total-value"><textarea id="paid">0</textarea></td>
               </tr>
               <tr>
                   <td colspan="2" class="blank"> </td>
                   <td colspan="2" class="total-line balance">Balance Due</td>
-                  <td class="total-value balance"><div class="due">0.00</div></td>
+                  <td class="total-value balance"><div class="due">0</div></td>
               </tr>
           </tfoot>
         </table>
@@ -101,12 +93,40 @@ Phone: 0822 5510-0105</textarea>
         </div>
     </div>
 
+    <!-- History Modal -->
     <div id="historyModal" class="modal no-print">
       <div class="modal-content">
         <span class="close-button">&times;</span>
         <h2>Invoice History</h2>
         <ul id="invoice-list"></ul>
       </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal no-print">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Room Price Settings</h2>
+            <div id="settings-form">
+                <div class="setting-item">
+                    <label for="price-standard">Standard Room:</label>
+                    <input type="text" id="price-standard" class="price-input">
+                </div>
+                <div class="setting-item">
+                    <label for="price-standard_extrabed">Standard Room + Extra Bed:</label>
+                    <input type="text" id="price-standard_extrabed" class="price-input">
+                </div>
+                <div class="setting-item">
+                    <label for="price-deluxe">Deluxe Room:</label>
+                    <input type="text" id="price-deluxe" class="price-input">
+                </div>
+                <div class="setting-item">
+                    <label for="price-deluxe_extrabed">Deluxe Room + Extra Bed:</label>
+                    <input type="text" id="price-deluxe_extrabed" class="price-input">
+                </div>
+                <button id="save-settings-btn">Save Settings</button>
+            </div>
+        </div>
     </div>
 
     <script type="module" src="/src/main.js"></script>

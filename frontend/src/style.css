@@ -18,6 +18,9 @@ body { font: 14px/1.4 Georgia, serif; background-color: #f4f4f4; color: #333; }
     display: inline-block;
 }
 .controls button:hover, #addrow:hover { background-color: #45a049; }
+#settings-btn { background-color: #008CBA; }
+#settings-btn:hover { background-color: #007B-A5; }
+
 
 /* General Elements */
 textarea, input { border: 0; font: 14px Georgia, Serif; overflow: hidden; resize: none; background-color: transparent; width: 100%; padding: 5px; text-align: center; }
@@ -43,7 +46,16 @@ table td, table th { border: 1px solid black; padding: 5px; text-align: center; 
 #items { clear: both; width: 100%; margin: 30px 0 0 0; border: 1px solid black; }
 #items th { background: #eee; }
 #items tbody td { vertical-align: middle; }
-#items td.description .desc-toggle { text-align: right; margin-bottom: 5px; }
+#items td.description .desc-toggle {
+    display: center;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 5px;
+}
+#items td.description .desc-toggle label {
+    cursor: pointer;
+}
 #items td.description .item-description { height: 30px; border-bottom: 1px solid #eee; margin-bottom: 5px; }
 #items td.description .date-inputs { display: flex; justify-content: center; align-items: center; gap: 4px; }
 #items td.item-name { width: 175px; }
@@ -84,9 +96,11 @@ textarea:hover, textarea:focus, input:hover, input:focus { background-color:#EEF
 
 /* Modal Styles */
 .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); }
-.modal-content { background-color: #fefefe; margin: 10% auto; padding: 20px; border: 1px solid #888; width: 60%; border-radius: 5px; }
+.modal-content { background-color: #fefefe; margin: 10% auto; padding: 20px; border: 1px solid #888; width: 60%; max-width: 500px; border-radius: 5px; }
 .close-button { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
 .close-button:hover, .close-button:focus { color: black; text-decoration: none; }
+
+/* History Modal List */
 #invoice-list { list-style-type: none; padding: 0; }
 #invoice-list li { padding: 12px; border-bottom: 1px solid #ddd; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
 #invoice-list li:hover { background-color: #f1f1f1; }
@@ -94,6 +108,39 @@ textarea:hover, textarea:focus, input:hover, input:focus { background-color:#EEF
 #invoice-list li .invoice-info { display: flex; flex-grow: 1; justify-content: space-between; align-items: center; margin-right: 20px; }
 #invoice-list li .delete-invoice-btn { background-color: #f44336; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; }
 #invoice-list li .delete-invoice-btn:hover { background-color: #da190b; }
+
+/* Settings Modal */
+#settings-form { margin-top: 20px; }
+.setting-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+.setting-item label {
+    font-weight: bold;
+    text-align: left;
+    flex-basis: 60%;
+}
+.setting-item .price-input {
+    flex-basis: 35%;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 8px;
+    text-align: right;
+}
+#save-settings-btn {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    margin-top: 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    width: 100%;
+}
+#save-settings-btn:hover { background-color: #45a049; }
 
 /* Terms */
 #terms { text-align: center; margin: 20px 0 0 0; }
@@ -126,3 +173,4 @@ textarea:hover, textarea:focus, input:hover, input:focus { background-color:#EEF
         width: auto; /* Shrink to content size */
     }
 }
+

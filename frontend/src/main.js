@@ -1,12 +1,16 @@
 import './style.css';
 
-// --- Helper Functions ---
+// --- Global Data ---
+let roomPriceData = {}; 
 
-/**
- * Formats a number into a currency string (e.g., 1000000 -> "1.000.000").
- * @param {number} num The number to format.
- * @returns {string} The formatted currency string.
- */
+const roomTypeDetails = {
+    standard: { text: 'Standard Room' },
+    standard_extrabed: { text: 'Standard Room + Extra Bed' },
+    deluxe: { text: 'Deluxe Room' },
+    deluxe_extrabed: { text: 'Deluxe Room + Extra Bed' }
+};
+
+// --- Helper Functions ---
 function formatCurrency(num) {
     if (isNaN(num)) num = 0;
     return new Intl.NumberFormat('id-ID', {
@@ -15,16 +19,10 @@ function formatCurrency(num) {
     }).format(num);
 }
 
-/**
- * Parses a formatted currency string back into a number (e.g., "1.000.000,00" -> 1000000).
- * @param {string} str The formatted string to parse.
- * @returns {number} The parsed number.
- */
 function parseFormattedNumber(str) {
     if (typeof str !== 'string') {
         return parseFloat(str) || 0;
     }
-    // Remove thousand separators (.) and replace decimal comma (,) with a dot (.)
     const raw = str.replace(/\./g, '').replace(/,/g, '.');
     return parseFloat(raw) || 0;
 }
@@ -37,21 +35,57 @@ function printToday() {
 function dateToYMD(dateString) {
     const date = new Date(dateString);
     if (isNaN(date)) return '';
-    return date.toLocaleDateString('en-CA'); // YYYY-MM-DD format
+    return date.toLocaleDateString('en-CA');
 }
 
-function getRoomDetails(roomType) {
-    const roomPrices = {
-        standard: { price: 250000, text: 'Standard Room' },
-        standard_extrabed: { price: 300000, text: 'Standard Room + Extra Bed' },
-        deluxe: { price: 300000, text: 'Deluxe Room' },
-        deluxe_extrabed: { price: 350000, text: 'Deluxe Room + Extra Bed' },
-    };
-    const details = roomPrices[roomType] || roomPrices.standard;
-    return { orderText: details.text, price: details.price };
+// --- Settings Logic ---
+function loadRoomPrices() {
+    const savedPrices = localStorage.getItem('roomPrices');
+    if (savedPrices) {
+        roomPriceData = JSON.parse(savedPrices);
+    } else {
+        // Default prices
+        roomPriceData = {
+            standard: 250000,
+            standard_extrabed: 300000,
+            deluxe: 300000,
+            deluxe_extrabed: 350000
+        };
+        saveRoomPrices(); // Save defaults for next time
+    }
 }
+
+function saveRoomPrices() {
+    localStorage.setItem('roomPrices', JSON.stringify(roomPriceData));
+}
+
+function openSettingsModal() {
+    document.getElementById('price-standard').value = formatCurrency(roomPriceData.standard);
+    document.getElementById('price-standard_extrabed').value = formatCurrency(roomPriceData.standard_extrabed);
+    document.getElementById('price-deluxe').value = formatCurrency(roomPriceData.deluxe);
+    document.getElementById('price-deluxe_extrabed').value = formatCurrency(roomPriceData.deluxe_extrabed);
+    document.getElementById('settingsModal').style.display = 'block';
+}
+
+function handleSaveSettings() {
+    roomPriceData.standard = parseFormattedNumber(document.getElementById('price-standard').value);
+    roomPriceData.standard_extrabed = parseFormattedNumber(document.getElementById('price-standard_extrabed').value);
+    roomPriceData.deluxe = parseFormattedNumber(document.getElementById('price-deluxe').value);
+    roomPriceData.deluxe_extrabed = parseFormattedNumber(document.getElementById('price-deluxe_extrabed').value);
+
+    saveRoomPrices();
+    alert('Prices updated successfully!');
+    document.getElementById('settingsModal').style.display = 'none';
+}
+
 
 // --- Core Invoice Logic ---
+function getRoomDetails(roomType) {
+    const details = roomTypeDetails[roomType] || roomTypeDetails.standard;
+    const price = roomPriceData[roomType] || roomPriceData.standard;
+    return { orderText: details.text, price: price };
+}
+
 function updatePrice(row, eventSource) {
     const cost = parseFormattedNumber(row.querySelector('.cost').value);
     let qty = 0;
@@ -140,7 +174,6 @@ function createNewItemRow(item = {}) {
         <td class="text-center price-col"><span class="price">${formatCurrency(initialPrice)}</span></td>
     `;
 
-    // Add event listeners for formatting editable currency fields
     const costInput = newRow.querySelector('.cost');
     costInput.addEventListener('blur', (e) => {
         e.target.value = formatCurrency(parseFormattedNumber(e.target.value));
@@ -296,20 +329,17 @@ async function deleteInvoice(invoiceId) {
 
 // --- Event Listeners Setup ---
 document.addEventListener('DOMContentLoaded', () => {
+    loadRoomPrices();
     document.getElementById('date').value = printToday();
 
+    document.getElementById('settings-btn').addEventListener('click', openSettingsModal);
     document.getElementById('save-btn').addEventListener('click', saveInvoice);
     document.getElementById('history-btn').addEventListener('click', showHistory);
 
-    // --- New, More Reliable Print Handling ---
     const originalTitle = document.title;
     document.getElementById('print-btn').addEventListener('click', () => {
-        let newTitle = "Invoice"; // Default title
-
-        // Get customer name and replace spaces with underscores
+        let newTitle = "Invoice";
         const customerName = document.getElementById('customer-title').value.trim().replace(/\s+/g, '_');
-        
-        // Find the first item row to get dates
         const firstItemRow = document.querySelector('.item-row');
         
         if (firstItemRow) {
@@ -317,34 +347,26 @@ document.addEventListener('DOMContentLoaded', () => {
             const checkoutInput = firstItemRow.querySelector('.checkout');
 
             if (checkinInput && checkinInput.value && checkoutInput && checkoutInput.value) {
-                // Helper to format date from YYYY-MM-DD to DD-MM
                 const formatDate = (dateString) => {
-                    const parts = dateString.split('-'); // [YYYY, MM, DD]
-                    return `${parts[2]}-${parts[1]}`; // Returns DD-MM
+                    const parts = dateString.split('-');
+                    return `${parts[2]}-${parts[1]}`;
                 };
-
                 const checkinStr = formatDate(checkinInput.value);
                 const checkoutStr = formatDate(checkoutInput.value);
                 const year = checkinInput.value.split('-')[0];
-
                 newTitle = `${customerName}_${checkinStr}-${checkoutStr}_${year}`;
             } else if (customerName) {
-                 newTitle = `${customerName}_Invoice`; // Fallback if dates are missing
+                 newTitle = `${customerName}_Invoice`;
             }
         } else if (customerName) {
-            newTitle = `${customerName}_Invoice`; // Fallback if no items exist
+            newTitle = `${customerName}_Invoice`;
         }
-
-        // Set the title, print, and then restore it
         document.title = newTitle;
         window.print();
-
-        // Restore the original title after a short delay
         setTimeout(() => {
             document.title = originalTitle;
         }, 1000);
     });
-
 
     document.getElementById('addrow').addEventListener('click', (e) => {
         e.preventDefault();
@@ -362,17 +384,25 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     paidInput.addEventListener('input', updateBalance);
     
-    document.querySelector('.close-button').addEventListener('click', () => {
+    document.querySelector('#historyModal .close-button').addEventListener('click', () => {
         document.getElementById('historyModal').style.display = 'none';
     });
+    document.querySelector('#settingsModal .close-button').addEventListener('click', () => {
+        document.getElementById('settingsModal').style.display = 'none';
+    });
+    document.getElementById('save-settings-btn').addEventListener('click', handleSaveSettings);
+
     window.addEventListener('click', (event) => {
         if (event.target == document.getElementById('historyModal')) {
             document.getElementById('historyModal').style.display = 'none';
+        }
+        if (event.target == document.getElementById('settingsModal')) {
+            document.getElementById('settingsModal').style.display = 'none';
         }
     });
 
     const initialRow = createNewItemRow({ order: 'Standard Room', unitCost: 250000, qty: 1 });
     updatePrice(initialRow);
     updateItemNumbers();
-    paidInput.value = formatCurrency(0); // Format initial paid amount
+    paidInput.value = formatCurrency(0);
 });
