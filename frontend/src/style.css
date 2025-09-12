@@ -52,7 +52,10 @@ table td, table th { border: 1px solid black; padding: 5px; text-align: center; 
 
 /* Customer and Meta */
 /* Container for the customer title and the meta table (date, etc.). */
-#customer { overflow: hidden; }
+#customer { 
+    overflow: hidden;
+    position: relative; /* Diperlukan untuk memposisikan tombol font secara absolut */
+}
 /* Styles the customer's name/title. */
 #customer-title { font-size: 20px; font-weight: bold; float: left; width: 50%; text-align: left; }
 /* Styles the table on the right that contains the date. */
@@ -63,6 +66,34 @@ table td, table th { border: 1px solid black; padding: 5px; text-align: center; 
 #meta td.meta-head { background: #eee; justify-content: center;}
 /* Ensures the textarea inside the meta table is centered. */
 #meta td textarea { text-align: center; }
+
+/* Font Size Controls */
+.font-controls {
+    position: absolute;
+    top: 0;
+    left: 42%; /* Posisi di dekat akhir area nama pelanggan */
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+.font-controls button {
+    background-color: #666;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    width: 24px;
+    height: 24px;
+    font-size: 18px;
+    line-height: 24px;
+    padding: 0;
+    margin: 0;
+    font-weight: bold;
+}
+.font-controls button:hover {
+    background-color: #333;
+}
+
 
 /* Items Table */
 /* Main styles for the invoice items table. */
@@ -138,7 +169,13 @@ table td, table th { border: 1px solid black; padding: 5px; text-align: center; 
     white-space: nowrap; /* Prevents long numbers from wrapping */
 }
 /* Styles the "Amount Paid" textarea within the totals section. */
-#items td.total-value textarea { height: 20px; background: none; text-align: right; }
+#items td.total-value textarea { 
+    height: 20px; 
+    background: none; 
+    text-align: right; 
+    position: relative; 
+    top: 5px; 
+}
 /* Styles the "Balance Due" row to give it emphasis. */
 #items td.balance { background: #eee; font-weight: bold;}
 /* Hides the border on blank cells used for spacing in the footer. */

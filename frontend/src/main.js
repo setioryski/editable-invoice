@@ -348,6 +348,34 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('history-btn').addEventListener('click', showHistory);
     document.getElementById('settings-btn').addEventListener('click', openSettingsModal);
 
+    // --- Font Size Control Logic ---
+    const customerTitle = document.getElementById('customer-title');
+    const increaseFontBtn = document.getElementById('font-size-increase');
+    const decreaseFontBtn = document.getElementById('font-size-decrease');
+    
+    // Function to apply font size and save it
+    const applyFontSize = (size) => {
+        // Ensure font size doesn't go below a readable limit
+        if (size < 10) size = 10; 
+        customerTitle.style.fontSize = `${size}px`;
+        localStorage.setItem('customerTitleFontSize', size);
+    };
+
+    // Load initial font size from localStorage or use default
+    let currentFontSize = parseInt(localStorage.getItem('customerTitleFontSize')) || 20;
+    applyFontSize(currentFontSize);
+
+    // Event listeners for buttons
+    increaseFontBtn.addEventListener('click', () => {
+        currentFontSize += 1;
+        applyFontSize(currentFontSize);
+    });
+
+    decreaseFontBtn.addEventListener('click', () => {
+        currentFontSize -= 1;
+        applyFontSize(currentFontSize);
+    });
+
     // --- Print Handling ---
     const originalTitle = document.title;
 

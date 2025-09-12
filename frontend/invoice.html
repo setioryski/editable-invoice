@@ -9,9 +9,9 @@
   <body>
     <div id="page-wrap">
         <div class="controls no-print">
-            <button id="settings-btn">Settings</button>
             <button id="save-btn">Save to Database</button>
             <button id="history-btn">View History</button>
+            <button id="settings-btn">Settings</button>
             <button id="print-btn">Print Invoice</button>
         </div>
 
@@ -31,6 +31,10 @@ Phone: 0822 5510-0105</textarea>
         </div>
         
         <div id="customer">
+            <div class="font-controls no-print">
+                <button id="font-size-increase">+</button>
+                <button id="font-size-decrease">-</button>
+            </div>
             <textarea id="customer-title">Widget Corp. c/o Steve Widget</textarea>
             <table id="meta">
                 <tr>
@@ -55,7 +59,7 @@ Phone: 0822 5510-0105</textarea>
           <thead>
               <tr>
                   <th class="text-center">Item</th>
-                  <th class="text-center">Description</th>
+                  <th class="text-center">Description (Check-in / Check-out)</th>
                   <th class="text-center cost-col">Unit Cost</th>
                   <th class="text-center qty-col">Qty</th>
                   <th class="text-center price-col">Price</th>
@@ -106,29 +110,30 @@ Phone: 0822 5510-0105</textarea>
     <div id="settingsModal" class="modal no-print">
         <div class="modal-content">
             <span class="close-button">&times;</span>
-            <h2>Room Price Settings</h2>
-            <div id="settings-form">
+            <h2>Manage Room Prices</h2>
+            <form id="settings-form">
                 <div class="setting-item">
                     <label for="price-standard">Standard Room:</label>
                     <input type="text" id="price-standard" class="price-input">
                 </div>
                 <div class="setting-item">
-                    <label for="price-standard_extrabed">Standard Room + Extra Bed:</label>
-                    <input type="text" id="price-standard_extrabed" class="price-input">
+                    <label for="price-standard-extrabed">Standard Room + Extra Bed:</label>
+                    <input type="text" id="price-standard-extrabed" class="price-input">
                 </div>
                 <div class="setting-item">
                     <label for="price-deluxe">Deluxe Room:</label>
                     <input type="text" id="price-deluxe" class="price-input">
                 </div>
                 <div class="setting-item">
-                    <label for="price-deluxe_extrabed">Deluxe Room + Extra Bed:</label>
-                    <input type="text" id="price-deluxe_extrabed" class="price-input">
+                    <label for="price-deluxe-extrabed">Deluxe Room + Extra Bed:</label>
+                    <input type="text" id="price-deluxe-extrabed" class="price-input">
                 </div>
-                <button id="save-settings-btn">Save Settings</button>
-            </div>
+                <button type="submit" id="save-settings-btn">Save Settings</button>
+            </form>
         </div>
     </div>
 
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>
+
