@@ -1,87 +1,142 @@
 /* General Styles */
+/* Universal selector (*) to reset margin and padding on all elements and set box-sizing to border-box for easier layout calculations. */
 * { margin: 0; padding: 0; box-sizing: border-box; }
+/* Sets the base font, line height, background color, and text color for the entire page. */
 body { font: 14px/1.4 Georgia, serif; background-color: #f4f4f4; color: #333; }
+/* Defines the main content area of the invoice with a fixed width, centered alignment, and a subtle shadow effect. */
 #page-wrap { width: 800px; margin: 20px auto; background: white; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
 
 /* Controls */
+/* Styles the container for the top action buttons (e.g., Save, Print). */
 .controls { padding: 10px 0; border-bottom: 1px solid #ddd; margin-bottom: 20px; text-align: center; }
+/* General styling for buttons and the "Add a row" link within the controls area. */
 .controls button, #addrow {
-    background-color: #4CAF50;
+    background-color: #4CAF50; /* Green background */
     color: white;
     padding: 10px 20px;
     margin: 10px 5px 10px 0;
     border: none;
-    border-radius: 4px;
+    border-radius: 4px; /* Rounded corners */
     cursor: pointer;
     font-size: 16px;
     text-decoration: none;
     display: inline-block;
 }
+/* Darkens the background color of buttons on hover for a visual feedback effect. */
 .controls button:hover, #addrow:hover { background-color: #45a049; }
-#settings-btn { background-color: #008CBA; }
-#settings-btn:hover { background-color: #007B-A5; }
+/* Specific background color for the Settings button. */
+#settings-btn { background-color: #008CBA; } /* Blue background */
+/* Darkens the Settings button on hover. */
+#settings-btn:hover { background-color: #007BA5; }
 
 
 /* General Elements */
+/* Base styling for all textarea and input fields to make them look like plain text. */
 textarea, input { border: 0; font: 14px Georgia, Serif; overflow: hidden; resize: none; background-color: transparent; width: 100%; padding: 5px; text-align: center; }
+/* Ensures the table borders collapse into a single line. */
 table { border-collapse: collapse; width: 100%;}
+/* Styles for all table cells (td and th), including borders and padding. */
 table td, table th { border: 1px solid black; padding: 5px; text-align: center; vertical-align: middle; }
 
 /* Header and Identity */
+/* Styles the main "INVOICE" title bar. */
 #header { width: 100%; margin: 20px 0; background: #222; text-align: center; color: white; font: bold 15px Helvetica, Sans-Serif; text-decoration: uppercase; letter-spacing: 20px; padding: 8px 0px; }
+/* Uses flexbox to position the address and logo areas side-by-side. */
 #identity { display: flex; justify-content: space-between; align-items: flex-start; }
+/* Styles the address block textarea. */
 #address { width: 250px; min-height: 100px; text-align: left;}
+/* Aligns the logo to the right. */
 #logo { text-align: right; margin: 20px 0; }
+/* Ensures the logo image is responsive and doesn't exceed its container's width. */
 #logo img { max-width: 800px; height: auto; }
 
 /* Customer and Meta */
+/* Container for the customer title and the meta table (date, etc.). */
 #customer { overflow: hidden; }
+/* Styles the customer's name/title. */
 #customer-title { font-size: 20px; font-weight: bold; float: left; width: 50%; text-align: left; }
+/* Styles the table on the right that contains the date. */
 #meta { margin-top: 1px; width: 300px; float: right; }
+/* Uses flexbox to center content within the meta table cells. */
 #meta td { display: flex; align-items: center; justify-content: center; }
+/* Styles the header cell in the meta table (e.g., "Date"). */
 #meta td.meta-head { background: #eee; justify-content: center;}
+/* Ensures the textarea inside the meta table is centered. */
 #meta td textarea { text-align: center; }
 
 /* Items Table */
+/* Main styles for the invoice items table. */
 #items { clear: both; width: 100%; margin: 30px 0 0 0; border: 1px solid black; }
+/* Background color for the table headers (Item, Description, etc.). */
 #items th { background: #eee; }
+/* Ensures content in the table body cells is vertically centered. */
 #items tbody td { vertical-align: middle; }
+/* Styles for the "Use Text" toggle switch container. */
 #items td.description .desc-toggle {
-    display: center;
-    justify-content: flex-end;
+    display: flex;
+    justify-content: center;
     align-items: center;
     gap: 5px;
     margin-bottom: 5px;
 }
+/* Makes the label for the toggle switch clickable. */
 #items td.description .desc-toggle label {
     cursor: pointer;
 }
+/* Styles the textarea for the text-based item description. */
 #items td.description .item-description { height: 30px; border-bottom: 1px solid #eee; margin-bottom: 5px; }
+/* Styles the container for the check-in and check-out date inputs. */
 #items td.description .date-inputs { display: flex; justify-content: center; align-items: center; gap: 4px; }
+/* Sets a fixed width for the "Item" column. */
 #items td.item-name { width: 175px; }
 
 /* Column Specific Styles */
+/* Sets a smaller fixed width for the "Qty" column. */
 #items .qty-col { width: 60px; }
+/* Sets a fixed width for the "Unit Cost" column and prevents the text from wrapping to a new line. */
 #items .cost-col { width: 120px; white-space: nowrap; }
+/* Sets a fixed width for the "Price" column and prevents the text from wrapping. */
 #items .price-col { width: 120px; white-space: nowrap; }
 
+/* Overrides the default textarea styling for the cost field to ensure proper centering. */
+#items .cost-col textarea {
+    width: auto;
+    padding: 0;
+}
+
+/* Menggeser posisi *hanya* untuk sel konten Deskripsi dan Harga ke atas sebanyak 5px */
+#items td.description,
+#items td.price-col {
+    position: relative;
+    top: -10px;
+}
+
+/* Styles for the total, subtotal, and balance due rows in the table footer. */
 #items td.total-line { border-right: 0; text-align: right; font-weight: bold; padding-right: 10px; }
+/* Styles the cells that contain the actual total values. */
 #items td.total-value { 
     border-left: 0; 
     padding: 10px; 
-    text-align: right; 
-    white-space: nowrap;
+    text-align: center; 
+    white-space: nowrap; /* Prevents long numbers from wrapping */
 }
+/* Styles the "Amount Paid" textarea within the totals section. */
 #items td.total-value textarea { height: 20px; background: none; text-align: right; }
+/* Styles the "Balance Due" row to give it emphasis. */
 #items td.balance { background: #eee; font-weight: bold;}
+/* Hides the border on blank cells used for spacing in the footer. */
 #items td.blank { border: 0; }
+/* A utility class to center text, also applied to inputs and textareas within centered cells. */
 .text-center, .text-center input, .text-center textarea { text-align: center; }
 
-
+/* A subtle yellow highlight effect when hovering over or focusing on editable fields. */
 textarea:hover, textarea:focus, input:hover, input:focus { background-color:#EEFF88; }
 
+/* Styles for the container of the delete button and item number. */
 .delete-wpr { position: relative; padding-left: 45px; }
+/* Styles the 'X' delete button for each item row. */
 .delete { display: block; color: #fff; text-decoration: none; position: absolute; background: #e66; font-weight: bold; padding: 0px 5px; border-radius: 50%; top: 5px; left: 0px; font-family: Verdana; font-size: 12px; line-height: 1.4; }
+/* Styles the auto-incrementing item number (1., 2., etc.). */
 .item-number {
     position: absolute;
     top: 5px;
@@ -90,38 +145,52 @@ textarea:hover, textarea:focus, input:hover, input:focus { background-color:#EEF
     line-height: 1.4;
 }
 
+/* Styles the hyphen between the check-in and check-out dates. */
 .date-separator {
     margin: 0 5px;
 }
 
 /* Modal Styles */
+/* Base styles for the modal pop-up windows (History and Settings). Initially hidden. */
 .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); }
+/* Styles the content area within the modal. */
 .modal-content { background-color: #fefefe; margin: 10% auto; padding: 20px; border: 1px solid #888; width: 60%; max-width: 500px; border-radius: 5px; }
+/* Styles the '×' close button in the top right corner of the modal. */
 .close-button { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
 .close-button:hover, .close-button:focus { color: black; text-decoration: none; }
 
 /* History Modal List */
+/* Styles the unordered list that holds the invoice history. */
 #invoice-list { list-style-type: none; padding: 0; }
+/* Styles each list item in the invoice history. */
 #invoice-list li { padding: 12px; border-bottom: 1px solid #ddd; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+/* Highlight effect when hovering over a history item. */
 #invoice-list li:hover { background-color: #f1f1f1; }
+/* Makes the customer name bold in the history list. */
 #invoice-list li .customer { font-weight: bold; }
+/* Styles the container for the invoice details (customer, date, total). */
 #invoice-list li .invoice-info { display: flex; flex-grow: 1; justify-content: space-between; align-items: center; margin-right: 20px; }
+/* Styles the delete button for each history item. */
 #invoice-list li .delete-invoice-btn { background-color: #f44336; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; }
 #invoice-list li .delete-invoice-btn:hover { background-color: #da190b; }
 
 /* Settings Modal */
+/* Adds some top margin to the settings form. */
 #settings-form { margin-top: 20px; }
+/* Styles the container for each setting item (label + input field). */
 .setting-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 15px;
 }
+/* Styles the label for each setting (e.g., "Standard Room:"). */
 .setting-item label {
     font-weight: bold;
     text-align: left;
     flex-basis: 60%;
 }
+/* Styles the price input fields in the settings modal. */
 .setting-item .price-input {
     flex-basis: 35%;
     border: 1px solid #ccc;
@@ -129,6 +198,7 @@ textarea:hover, textarea:focus, input:hover, input:focus { background-color:#EEF
     padding: 8px;
     text-align: right;
 }
+/* Styles the "Save Settings" button. */
 #save-settings-btn {
     background-color: #4CAF50;
     color: white;
@@ -143,34 +213,76 @@ textarea:hover, textarea:focus, input:hover, input:focus { background-color:#EEF
 #save-settings-btn:hover { background-color: #45a049; }
 
 /* Terms */
+/* Styles the container for the "Terms" section at the bottom of the invoice. */
 #terms { text-align: center; margin: 20px 0 0 0; }
+/* Styles the "Terms" heading. */
 #terms h5 { text-transform: uppercase; font: 13px Helvetica, Sans-Serif; letter-spacing: 10px; border-bottom: 1px solid black; padding: 0 0 8px 0; margin: 0 0 8px 0; }
+/* Styles the textarea for the terms content. */
 #terms textarea { text-align: center;}
 
 /* Print Styles */
+/* This block contains styles that are ONLY applied when the user prints the page. */
 @media print {
+    /* Resets the body background for printing. */
     body { background: none; }
+    /* Removes margin and shadow from the main container for a clean print layout. */
     #page-wrap { margin: 0; box-shadow: none; border: none; }
+    /* Hides all elements that shouldn't be printed, like buttons. */
     .no-print, #addrow, .delete, .desc-toggle, .delete-invoice-btn { display: none !important; }
+    /* Removes borders and backgrounds from input fields for a cleaner print look. */
     textarea, input {
         border: none !important;
         background-color: transparent !important;
         box-shadow: none !important;
         resize: none;
-        -webkit-print-color-adjust: exact;
+        -webkit-print-color-adjust: exact; /* Ensures colors are printed correctly in Chrome. */
     }
+
+    /* Memastikan footer hanya muncul di akhir tabel (halaman terakhir) */
+    /* Aturan ini mengubah perilaku default footer (yang diulang di setiap halaman) */
+    /* menjadi seperti bagian dari isi tabel biasa, sehingga hanya muncul sekali di akhir. */
     #items tfoot {
         display: table-row-group;
     }
-    /* Hide calendar icon on date inputs when printing */
+    
+    /* Stronger rules to hide the calendar icon on all browsers when printing. */
     #items input[type="date"]::-webkit-calendar-picker-indicator {
-        display: none;
+        display: none !important;
     }
-    /* Ensure the date inputs themselves don't have extra padding */
+    /* Removes default browser styling from date inputs to make them look like plain text on print. */
     #items input[type="date"] {
         padding: 0;
         margin: 0;
-        width: auto; /* Shrink to content size */
+        width: auto;
+        -webkit-appearance: none; /* Removes default styling on iOS/Safari */
+        appearance: none;         /* Removes default styling on other browsers */
+        background: none !important; /* Ensures no background image icon */
+    }
+
+    /* Sets vertical alignment for all table body cells on print. */
+    #items tbody td {
+        vertical-align: middle;
+    }
+
+    /* Sets horizontal text alignment for specific columns for better readability on print. */
+    /* Item and Description text is aligned to the left. */
+    #items tbody .item-name,
+    #items tbody .description,
+    #items tbody .item-name textarea,
+    #items tbody .description textarea {
+        text-align: left;
+        padding-left: 5px;
+    }
+
+    /* Cost, Price, and Qty are centered on print. */
+    #items tbody .cost-col,
+    #items tbody .price-col,
+    #items tbody .qty-col {
+        text-align: center;
+    }
+    
+    #items tbody .cost-col textarea {
+        text-align: center;
     }
 }
 
