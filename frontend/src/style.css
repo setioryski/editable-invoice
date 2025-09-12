@@ -78,17 +78,34 @@ table td, table th { border: 1px solid black; padding: 5px; text-align: center; 
     align-items: center;
     gap: 5px;
     margin-bottom: 5px;
+    position: relative;
+    top: 5px;
 }
 /* Makes the label for the toggle switch clickable. */
 #items td.description .desc-toggle label {
     cursor: pointer;
 }
 /* Styles the textarea for the text-based item description. */
-#items td.description .item-description { height: 30px; border-bottom: 1px solid #eee; margin-bottom: 5px; }
+#items td.description .item-description { 
+    height: 30px; 
+    border-bottom: 1px solid #eee; 
+    margin-bottom: 5px; 
+    text-align: center; /* Memastikan teks di dalam textarea ini selalu di tengah */
+}
 /* Styles the container for the check-in and check-out date inputs. */
 #items td.description .date-inputs { display: flex; justify-content: center; align-items: center; gap: 4px; }
-/* Sets a fixed width for the "Item" column. */
-#items td.item-name { width: 175px; }
+/* Sets a fixed width for the "Item" column and aligns its content to the top. */
+#items td.item-name { 
+    width: 175px; 
+    vertical-align: top; /* Align content to the top */
+}
+
+/* Styles the textarea within the "Item" column for proper text wrapping and alignment. */
+#items td.item-name textarea {
+    text-align: left; /* Align text to the left for better readability */
+    white-space: normal; /* Ensure text can wrap */
+}
+
 
 /* Column Specific Styles */
 /* Sets a smaller fixed width for the "Qty" column. */

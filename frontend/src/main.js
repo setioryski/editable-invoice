@@ -1,16 +1,12 @@
 import './style.css';
 
-// --- Global Data ---
-let roomPriceData = {}; 
-
-const roomTypeDetails = {
-    standard: { text: 'Standard Room' },
-    standard_extrabed: { text: 'Standard Room + Extra Bed' },
-    deluxe: { text: 'Deluxe Room' },
-    deluxe_extrabed: { text: 'Deluxe Room + Extra Bed' }
-};
-
 // --- Helper Functions ---
+
+/**
+ * Formats a number into a currency string (e.g., 1000000 -> "1.000.000").
+ * @param {number} num The number to format.
+ * @returns {string} The formatted currency string.
+ */
 function formatCurrency(num) {
     if (isNaN(num)) num = 0;
     return new Intl.NumberFormat('id-ID', {
@@ -19,10 +15,16 @@ function formatCurrency(num) {
     }).format(num);
 }
 
+/**
+ * Parses a formatted currency string back into a number (e.g., "1.000.000,00" -> 1000000).
+ * @param {string} str The formatted string to parse.
+ * @returns {number} The parsed number.
+ */
 function parseFormattedNumber(str) {
     if (typeof str !== 'string') {
         return parseFloat(str) || 0;
     }
+    // Remove thousand separators (.) and replace decimal comma (,) with a dot (.)
     const raw = str.replace(/\./g, '').replace(/,/g, '.');
     return parseFloat(raw) || 0;
 }
@@ -35,57 +37,23 @@ function printToday() {
 function dateToYMD(dateString) {
     const date = new Date(dateString);
     if (isNaN(date)) return '';
-    return date.toLocaleDateString('en-CA');
+    return date.toLocaleDateString('en-CA'); // YYYY-MM-DD format
 }
 
-// --- Settings Logic ---
-function loadRoomPrices() {
-    const savedPrices = localStorage.getItem('roomPrices');
-    if (savedPrices) {
-        roomPriceData = JSON.parse(savedPrices);
-    } else {
-        // Default prices
-        roomPriceData = {
-            standard: 250000,
-            standard_extrabed: 300000,
-            deluxe: 300000,
-            deluxe_extrabed: 350000
-        };
-        saveRoomPrices(); // Save defaults for next time
-    }
+function getRoomDetails(roomType) {
+    // Load prices from localStorage or use defaults
+    const savedPrices = JSON.parse(localStorage.getItem('roomPrices')) || {};
+    const roomPrices = {
+        standard: { price: savedPrices.standard || 250000, text: 'Standard Room' },
+        standard_extrabed: { price: savedPrices.standard_extrabed || 300000, text: 'Standard Room + Extra Bed' },
+        deluxe: { price: savedPrices.deluxe || 300000, text: 'Deluxe Room' },
+        deluxe_extrabed: { price: savedPrices.deluxe_extrabed || 350000, text: 'Deluxe Room + Extra Bed' },
+    };
+    const details = roomPrices[roomType] || roomPrices.standard;
+    return { orderText: details.text, price: details.price };
 }
-
-function saveRoomPrices() {
-    localStorage.setItem('roomPrices', JSON.stringify(roomPriceData));
-}
-
-function openSettingsModal() {
-    document.getElementById('price-standard').value = formatCurrency(roomPriceData.standard);
-    document.getElementById('price-standard_extrabed').value = formatCurrency(roomPriceData.standard_extrabed);
-    document.getElementById('price-deluxe').value = formatCurrency(roomPriceData.deluxe);
-    document.getElementById('price-deluxe_extrabed').value = formatCurrency(roomPriceData.deluxe_extrabed);
-    document.getElementById('settingsModal').style.display = 'block';
-}
-
-function handleSaveSettings() {
-    roomPriceData.standard = parseFormattedNumber(document.getElementById('price-standard').value);
-    roomPriceData.standard_extrabed = parseFormattedNumber(document.getElementById('price-standard_extrabed').value);
-    roomPriceData.deluxe = parseFormattedNumber(document.getElementById('price-deluxe').value);
-    roomPriceData.deluxe_extrabed = parseFormattedNumber(document.getElementById('price-deluxe_extrabed').value);
-
-    saveRoomPrices();
-    alert('Prices updated successfully!');
-    document.getElementById('settingsModal').style.display = 'none';
-}
-
 
 // --- Core Invoice Logic ---
-function getRoomDetails(roomType) {
-    const details = roomTypeDetails[roomType] || roomTypeDetails.standard;
-    const price = roomPriceData[roomType] || roomPriceData.standard;
-    return { orderText: details.text, price: price };
-}
-
 function updatePrice(row, eventSource) {
     const cost = parseFormattedNumber(row.querySelector('.cost').value);
     let qty = 0;
@@ -174,6 +142,7 @@ function createNewItemRow(item = {}) {
         <td class="text-center price-col"><span class="price">${formatCurrency(initialPrice)}</span></td>
     `;
 
+    // Add event listeners for formatting editable currency fields
     const costInput = newRow.querySelector('.cost');
     costInput.addEventListener('blur', (e) => {
         e.target.value = formatCurrency(parseFormattedNumber(e.target.value));
@@ -204,6 +173,22 @@ function createNewItemRow(item = {}) {
             dateInputs.style.display = 'flex';
         }
     });
+
+    // --- Auto-resize logic for Item Name textarea ---
+    const itemNameTextarea = newRow.querySelector('.item-name textarea');
+    
+    // Function to adjust textarea height based on content
+    const autoResize = (el) => {
+        el.style.height = 'auto'; // Reset height to recalculate
+        el.style.height = (el.scrollHeight) + 'px'; // Set height to content height
+    };
+
+    // Add event listener to resize on input
+    itemNameTextarea.addEventListener('input', () => autoResize(itemNameTextarea));
+    
+    // Initial resize after the element is added to the DOM
+    setTimeout(() => autoResize(itemNameTextarea), 0);
+
 
     itemsTbody.appendChild(newRow);
     return newRow;
@@ -327,46 +312,99 @@ async function deleteInvoice(invoiceId) {
     }
 }
 
+// --- Settings Modal Logic ---
+function openSettingsModal() {
+    const savedPrices = JSON.parse(localStorage.getItem('roomPrices')) || {};
+    document.getElementById('price-standard').value = savedPrices.standard || '250000';
+    document.getElementById('price-standard-extrabed').value = savedPrices.standard_extrabed || '300000';
+    document.getElementById('price-deluxe').value = savedPrices.deluxe || '300000';
+    document.getElementById('price-deluxe-extrabed').value = savedPrices.deluxe_extrabed || '350000';
+    document.getElementById('settingsModal').style.display = 'block';
+}
+
+function closeSettingsModal() {
+    document.getElementById('settingsModal').style.display = 'none';
+}
+
+function saveSettings(e) {
+    e.preventDefault();
+    const newPrices = {
+        standard: parseFormattedNumber(document.getElementById('price-standard').value),
+        standard_extrabed: parseFormattedNumber(document.getElementById('price-standard-extrabed').value),
+        deluxe: parseFormattedNumber(document.getElementById('price-deluxe').value),
+        deluxe_extrabed: parseFormattedNumber(document.getElementById('price-deluxe-extrabed').value),
+    };
+    localStorage.setItem('roomPrices', JSON.stringify(newPrices));
+    alert('Prices saved!');
+    closeSettingsModal();
+}
+
+
 // --- Event Listeners Setup ---
 document.addEventListener('DOMContentLoaded', () => {
-    loadRoomPrices();
     document.getElementById('date').value = printToday();
 
-    document.getElementById('settings-btn').addEventListener('click', openSettingsModal);
     document.getElementById('save-btn').addEventListener('click', saveInvoice);
     document.getElementById('history-btn').addEventListener('click', showHistory);
+    document.getElementById('settings-btn').addEventListener('click', openSettingsModal);
 
+    // --- Print Handling ---
     const originalTitle = document.title;
-    document.getElementById('print-btn').addEventListener('click', () => {
-        let newTitle = "Invoice";
-        const customerName = document.getElementById('customer-title').value.trim().replace(/\s+/g, '_');
-        const firstItemRow = document.querySelector('.item-row');
-        
-        if (firstItemRow) {
-            const checkinInput = firstItemRow.querySelector('.checkin');
-            const checkoutInput = firstItemRow.querySelector('.checkout');
 
-            if (checkinInput && checkinInput.value && checkoutInput && checkoutInput.value) {
-                const formatDate = (dateString) => {
-                    const parts = dateString.split('-');
-                    return `${parts[2]}-${parts[1]}`;
-                };
-                const checkinStr = formatDate(checkinInput.value);
-                const checkoutStr = formatDate(checkoutInput.value);
-                const year = checkinInput.value.split('-')[0];
-                newTitle = `${customerName}_${checkinStr}-${checkoutStr}_${year}`;
-            } else if (customerName) {
-                 newTitle = `${customerName}_Invoice`;
-            }
-        } else if (customerName) {
-            newTitle = `${customerName}_Invoice`;
-        }
-        document.title = newTitle;
-        window.print();
-        setTimeout(() => {
-            document.title = originalTitle;
-        }, 1000);
+    // Restore the original title after printing is done or cancelled
+    window.addEventListener('afterprint', () => {
+        document.title = originalTitle;
     });
+
+    // Setup print button click
+    document.getElementById('print-btn').addEventListener('click', () => {
+        let newTitle = "Invoice"; // Default title
+
+        // Get customer name and replace spaces with underscores
+        const customerName = document.getElementById('customer-title').value.trim().replace(/\s+/g, '_');
+        
+        // Find all checkin and checkout dates
+        const allCheckinDates = [...document.querySelectorAll('.item-row .checkin')]
+            .map(input => input.value)
+            .filter(val => val) // Filter out empty strings
+            .map(dateStr => new Date(dateStr)); // Convert to Date objects
+
+        const allCheckoutDates = [...document.querySelectorAll('.item-row .checkout')]
+            .map(input => input.value)
+            .filter(val => val) // Filter out empty strings
+            .map(dateStr => new Date(dateStr)); // Convert to Date objects
+        
+        if (allCheckinDates.length > 0 && allCheckoutDates.length > 0) {
+            // Find the earliest check-in and latest check-out
+            const earliestCheckin = new Date(Math.min.apply(null, allCheckinDates));
+            const latestCheckout = new Date(Math.max.apply(null, allCheckoutDates));
+
+            // Helper to format date object to DD-MM
+            const formatDate = (dateObj) => {
+                const day = String(dateObj.getDate()).padStart(2, '0');
+                const month = String(dateObj.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
+                return `${day}-${month}`;
+            };
+            
+            const checkinStr = formatDate(earliestCheckin);
+            const checkoutStr = formatDate(latestCheckout);
+            const year = earliestCheckin.getFullYear();
+
+            newTitle = `${customerName}_${checkinStr}-${checkoutStr}_${year}`;
+        } else if (customerName) {
+            newTitle = `${customerName}_Invoice`; // Fallback if dates are missing
+        }
+
+        // Set the new title before calling print
+        document.title = newTitle;
+
+        // Use a short timeout. This gives mobile browsers a moment to process
+        // the title change before the print dialog is triggered.
+        setTimeout(() => {
+            window.print();
+        }, 100);
+    });
+
 
     document.getElementById('addrow').addEventListener('click', (e) => {
         e.preventDefault();
@@ -384,25 +422,28 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     paidInput.addEventListener('input', updateBalance);
     
+    // Settings Modal Listeners
+    document.querySelector('#settingsModal .close-button').addEventListener('click', closeSettingsModal);
+    document.getElementById('settings-form').addEventListener('submit', saveSettings);
+    
+    // History Modal Listeners
     document.querySelector('#historyModal .close-button').addEventListener('click', () => {
         document.getElementById('historyModal').style.display = 'none';
     });
-    document.querySelector('#settingsModal .close-button').addEventListener('click', () => {
-        document.getElementById('settingsModal').style.display = 'none';
-    });
-    document.getElementById('save-settings-btn').addEventListener('click', handleSaveSettings);
 
+    // Close modals if user clicks outside of them
     window.addEventListener('click', (event) => {
         if (event.target == document.getElementById('historyModal')) {
             document.getElementById('historyModal').style.display = 'none';
         }
         if (event.target == document.getElementById('settingsModal')) {
-            document.getElementById('settingsModal').style.display = 'none';
+            closeSettingsModal();
         }
     });
 
     const initialRow = createNewItemRow({ order: 'Standard Room', unitCost: 250000, qty: 1 });
     updatePrice(initialRow);
     updateItemNumbers();
-    paidInput.value = formatCurrency(0);
+    paidInput.value = formatCurrency(0); // Format initial paid amount
 });
+
