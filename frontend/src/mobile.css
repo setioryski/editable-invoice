@@ -1,0 +1,377 @@
+/* ============================================================
+   Mobile Styles – Editable Invoice
+   Only loaded on screens ≤ 640px. Does NOT affect print.
+   Desktop table layout, horizontal scroll on narrow screens.
+   ============================================================ */
+
+/* ==========================================================
+   1. Page Wrap
+   ========================================================== */
+#page-wrap {
+  padding: 10px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ==========================================================
+   2. Header Row
+   ========================================================== */
+#header-row {
+  flex-direction: column;
+  gap: 6px;
+  margin: 4px 0 14px;
+}
+
+#header {
+  font-size: .85rem;
+  letter-spacing: .3em;
+  padding: 10px 12px;
+  margin: 0;
+  border-radius: 6px;
+}
+
+#doctype-select {
+  width: 100%;
+  padding: 8px 2rem 8px .75rem;
+  font-size: .8rem;
+  border-radius: 6px;
+}
+
+/* ==========================================================
+   3. Controls — two columns, compact
+   ========================================================== */
+.controls {
+  gap: 6px;
+  padding: 6px 0 14px;
+  margin-bottom: 14px;
+}
+
+.controls button {
+  flex: 1 1 calc(50% - 6px);
+  min-width: 0;
+  padding: 10px 6px;
+  font-size: .8rem;
+  border-radius: 6px;
+}
+
+/* ==========================================================
+   4. Identity
+   ========================================================== */
+#identity {
+  flex-direction: row;
+  gap: 10px;
+}
+
+#address {
+  flex: 1;
+  min-width: 150px;
+  min-height: 120px;
+  height: auto;
+  padding: 10px;
+  font-size: .82rem;
+  line-height: 1.5;
+  overflow: visible;
+  text-align: left;
+  background: #ffffff;
+}
+
+#logo {
+  flex-shrink: 0;
+  text-align: right;
+}
+
+#logo img {
+  max-width: 140px;
+}
+
+/* ==========================================================
+   5. Customer + Date
+   ========================================================== */
+#customer {
+  flex-direction: row;
+  gap: 10px;
+  position: static;
+  align-items: flex-start;
+}
+
+#customer-title {
+  flex: 1;
+  max-width: 50%;
+  font-size: .9rem;
+  padding: 8px;
+  text-align: center;
+}
+
+.font-controls {
+  justify-content: center;
+  position: static;
+  margin-bottom: 0;
+}
+
+.font-controls button {
+  width: 28px;
+  height: 28px;
+  font-size: 16px;
+  line-height: 28px;
+}
+
+#meta {
+  min-width: 140px;
+  flex-shrink: 0;
+}
+
+#meta td {
+  padding: 6px 8px;
+  font-size: .8rem;
+  text-align: center;
+}
+
+/* ==========================================================
+   6. Room Type + Add Row
+   ========================================================== */
+.no-print select {
+  padding: 8px;
+  font-size: .85rem;
+}
+
+#addrow {
+  padding: 8px 14px;
+  font-size: .85rem;
+}
+
+/* ==========================================================
+   7. Table — keep desktop layout, horizontal scroll
+   ========================================================== */
+#items {
+  display: table;
+  width: 100%;
+  min-width: 650px;
+  overflow-x: visible;
+  border-collapse: collapse;
+  margin-top: 16px;
+  font-size: .78rem;
+}
+
+/* Ensure table stays as table */
+#items thead { display: table-header-group; }
+#items tbody { display: table-row-group; }
+#items tfoot { display: table-row-group; }
+#items tr    { display: table-row; }
+#items th    { display: table-cell; }
+#items td    { display: table-cell; }
+
+/* Column widths — compact for mobile but keep desktop proportions */
+#items .qty-col    { width: 45px; }
+#items .cost-col   { width: 90px; }
+#items .price-col  { width: 100px; }
+#items td.item-name { width: 140px; }
+
+/* Headers: compact */
+#items thead th {
+  font-size: .7rem;
+  padding: 6px 4px;
+  letter-spacing: .02em;
+  white-space: nowrap;
+}
+
+/* Body cells: compact */
+#items td {
+  padding: 5px 6px;
+  vertical-align: middle;
+}
+
+/* ---- All text: horizontal, center, nowrap ---- */
+#items th,
+#items td,
+#items td textarea,
+#items td input,
+#items td span,
+#items td div,
+#items td .price {
+  text-align: center !important;
+  white-space: nowrap !important;
+  font-size: .78rem;
+}
+
+/* Item name textarea: single line — must beat base specificity */
+#items td.item-name textarea {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis;
+  text-align: center !important;
+  width: 100%;
+  height: auto;
+  min-height: 0;
+}
+
+/* Description textarea: also horizontal */
+#items td.description .item-description {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis;
+}
+
+/* Cost/Qty textarea: also horizontal */
+#items .cost-col textarea,
+#items .qty-col textarea {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis;
+  text-align: center !important;
+  width: 100%;
+  height: auto;
+  min-height: 0;
+}
+
+/* Description cell */
+#items td.description .desc-toggle {
+  justify-content: center;
+  font-size: .65rem;
+}
+
+#items td.description .date-inputs {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: center;
+  white-space: nowrap;
+  gap: 3px;
+}
+
+#items td.description .item-description {
+  height: auto;
+  min-height: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+}
+
+/* Date inputs */
+#items input[type="date"] {
+  min-width: 0;
+  width: auto;
+  font-size: .7rem;
+  padding: 3px 4px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.date-separator {
+  font-size: .7rem;
+  flex-shrink: 0;
+}
+
+/* Cost/Qty/Price */
+#items .cost-col textarea,
+#items .qty-col textarea {
+  width: 100%;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 2px 4px;
+}
+
+#items .price-col span,
+#items .price-col .price {
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* ---- Keep delete & numbering visible ---- */
+.delete-wpr { padding-left: 42px; }
+.delete { width: 20px; height: 20px; font-size: 11px; line-height: 20px; top: 2px; }
+.item-number { font-size: .7rem; left: 24px; top: 3px; }
+
+/* ---- Footer ---- */
+#items tfoot td {
+  padding: 5px 8px;
+}
+
+#items td.blank { border: 0; }
+#items td.total-line {
+  text-align: center;
+  font-size: .75rem;
+  padding-right: 6px;
+}
+#items td.total-value {
+  text-align: center;
+  font-size: .78rem;
+  white-space: nowrap;
+  padding: 5px 8px;
+}
+#items td.total-value textarea {
+  width: 80px;
+  height: 18px;
+  text-align: center;
+  white-space: nowrap;
+}
+#items td.balance {
+  font-size: .8rem;
+}
+
+/* ==========================================================
+   8. Terms
+   ========================================================== */
+#terms { margin-top: 14px; text-align: center; }
+#terms h5 { font-size: .7rem; letter-spacing: .2em; }
+#terms textarea { font-size: .78rem; min-height: 32px; text-align: center; }
+
+/* ==========================================================
+   9. Modals
+   ========================================================== */
+.modal-content {
+  margin: 2% auto;
+  width: 96%;
+  max-width: 96%;
+  padding: 14px;
+  border-radius: 10px;
+}
+
+.close-button { font-size: 30px; }
+
+/* ==========================================================
+   10. History
+   ========================================================== */
+#invoice-list li {
+  padding: 12px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+
+#invoice-list li .invoice-info {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+#invoice-list li .delete-invoice-btn {
+  align-self: flex-end;
+  padding: 6px 14px;
+  font-size: .8rem;
+}
+
+/* ==========================================================
+   11. Settings
+   ========================================================== */
+.setting-item {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.setting-item .price-input {
+  width: 100%;
+  padding: 8px;
+  font-size: .9rem;
+}
+
+#save-settings-btn {
+  padding: 12px;
+  font-size: .9rem;
+  border-radius: 6px;
+}

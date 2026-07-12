@@ -4,12 +4,8 @@ import { resolve } from 'path';
 export default defineConfig({
   server: {
     proxy: {
-      // Proxy API requests to the backend
+      // Proxy all API requests to the backend (auth, invoices, etc.)
       '/api': 'http://localhost:3000',
-      
-      // Add this rule to proxy the invoice page
-      // This forces the backend's authentication check to run
-    //   '/invoice.html': 'http://localhost:3000',
     },
   },
   build: {

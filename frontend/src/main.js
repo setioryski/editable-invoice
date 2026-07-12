@@ -1,5 +1,21 @@
 import './style.css';
 
+// ============================================================
+// AUTH GUARD — redirect to login if not authenticated
+// ============================================================
+(async function checkAuth() {
+  try {
+    const res = await fetch('/api/check-auth');
+    if (!res.ok) {
+      // Not logged in — redirect to login page
+      window.location.replace('/index.html');
+    }
+  } catch (err) {
+    // Backend unreachable — redirect to login
+    window.location.replace('/index.html');
+  }
+})();
+
 // --- Helper Functions ---
 
 /**
@@ -344,9 +360,30 @@ function saveSettings(e) {
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('date').value = printToday();
 
+    // --- Address textarea auto-resize ---
+    const addressTextarea = document.getElementById('address');
+    const autoResizeAddress = () => {
+        addressTextarea.style.height = 'auto';
+        addressTextarea.style.height = (addressTextarea.scrollHeight) + 'px';
+    };
+    addressTextarea.addEventListener('input', autoResizeAddress);
+    setTimeout(autoResizeAddress, 0);
+
     document.getElementById('save-btn').addEventListener('click', saveInvoice);
     document.getElementById('history-btn').addEventListener('click', showHistory);
     document.getElementById('settings-btn').addEventListener('click', openSettingsModal);
+
+    // --- Document Type Dropdown (Invoice / Quotation) ---
+    const doctypeSelect = document.getElementById('doctype-select');
+    const headerEl = document.getElementById('header');
+
+    // Update header text when dropdown changes
+    doctypeSelect.addEventListener('change', () => {
+        const val = doctypeSelect.value;
+        headerEl.textContent = val;
+        // Update the print button text to reflect current doctype
+        document.getElementById('print-btn').textContent = `Print ${val.charAt(0) + val.slice(1).toLowerCase()}`;
+    });
 
     // --- Font Size Control Logic ---
     const customerTitle = document.getElementById('customer-title');
@@ -386,11 +423,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Setup print button click
     document.getElementById('print-btn').addEventListener('click', () => {
-        let newTitle = "Invoice"; // Default title
+        const docType = document.getElementById('header').textContent; // "INVOICE" or "QUOTATION"
+        let newTitle = docType.charAt(0) + docType.slice(1).toLowerCase(); // "Invoice" or "Quotation"
 
         // Get customer name and replace spaces with underscores
         const customerName = document.getElementById('customer-title').value.trim().replace(/\s+/g, '_');
-        
+
         // Find all checkin and checkout dates
         const allCheckinDates = [...document.querySelectorAll('.item-row .checkin')]
             .map(input => input.value)
@@ -401,7 +439,7 @@ document.addEventListener('DOMContentLoaded', () => {
             .map(input => input.value)
             .filter(val => val) // Filter out empty strings
             .map(dateStr => new Date(dateStr)); // Convert to Date objects
-        
+
         if (allCheckinDates.length > 0 && allCheckoutDates.length > 0) {
             // Find the earliest check-in and latest check-out
             const earliestCheckin = new Date(Math.min.apply(null, allCheckinDates));
@@ -413,14 +451,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 const month = String(dateObj.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
                 return `${day}-${month}`;
             };
-            
+
             const checkinStr = formatDate(earliestCheckin);
             const checkoutStr = formatDate(latestCheckout);
             const year = earliestCheckin.getFullYear();
 
             newTitle = `${customerName}_${checkinStr}-${checkoutStr}_${year}`;
         } else if (customerName) {
-            newTitle = `${customerName}_Invoice`; // Fallback if dates are missing
+            newTitle = `${customerName}_${docType.charAt(0) + docType.slice(1).toLowerCase()}`;
         }
 
         // Set the new title before calling print

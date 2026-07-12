@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Editable Invoice</title>
     <link rel="stylesheet" href="src/style.css" />
+    <link rel="stylesheet" href="src/mobile.css" media="screen and (max-width: 640px)" />
   </head>
   <body>
     <div id="page-wrap">
@@ -15,7 +16,13 @@
             <button id="print-btn">Print Invoice</button>
         </div>
 
-        <h1 id="header">INVOICE</h1>
+        <div id="header-row">
+            <h1 id="header">INVOICE</h1>
+            <select id="doctype-select" class="no-print" title="Change document type">
+                <option value="INVOICE" selected>Invoice</option>
+                <option value="QUOTATION">Quotation</option>
+            </select>
+        </div>
         
         <div id="identity">
             <textarea id="address">Jalan Lintas Sumatera no.3
@@ -59,7 +66,7 @@ Phone: 0822 5510-0105</textarea>
           <thead>
               <tr>
                   <th class="text-center">Item</th>
-                  <th class="text-center">Description (Check-in / Check-out)</th>
+                  <th class="text-center">Description</th>
                   <th class="text-center cost-col">Unit Cost</th>
                   <th class="text-center qty-col">Qty</th>
                   <th class="text-center price-col">Price</th>

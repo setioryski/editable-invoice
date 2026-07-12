@@ -1,342 +1,1149 @@
-/* General Styles */
-/* Universal selector (*) to reset margin and padding on all elements and set box-sizing to border-box for easier layout calculations. */
-* { margin: 0; padding: 0; box-sizing: border-box; }
-/* Sets the base font, line height, background color, and text color for the entire page. */
-body { font: 14px/1.4 Georgia, serif; background-color: #f4f4f4; color: #333; }
-/* Defines the main content area of the invoice with a fixed width, centered alignment, and a subtle shadow effect. */
-#page-wrap { width: 800px; margin: 20px auto; background: white; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+/* ============================================================
+   Invoice Page – Editable Invoice
+   Mobile-first, modern, fully responsive. 320px → 4K.
+   ============================================================ */
 
-/* Controls */
-/* Styles the container for the top action buttons (e.g., Save, Print). */
-.controls { padding: 10px 0; border-bottom: 1px solid #ddd; margin-bottom: 20px; text-align: center; }
-/* General styling for buttons and the "Add a row" link within the controls area. */
-.controls button, #addrow {
-    background-color: #4CAF50; /* Green background */
-    color: white;
-    padding: 10px 20px;
-    margin: 10px 5px 10px 0;
-    border: none;
-    border-radius: 4px; /* Rounded corners */
-    cursor: pointer;
-    font-size: 16px;
-    text-decoration: none;
-    display: inline-block;
+/* ==========================================================
+   1. CSS Custom Properties
+   ========================================================== */
+:root {
+  /* Palette */
+  --color-bg:               #ffffff;
+  --color-surface:          #ffffff;
+  --color-text:             #1a1d23;
+  --color-text-muted:       #5f6b7a;
+  --color-border:           #dde1e7;
+  --color-border-strong:    #c4c9d1;
+  --color-primary:          #2563eb;
+  --color-primary-hover:    #1d4ed8;
+  --color-green:            #10b981;
+  --color-green-hover:      #059669;
+  --color-red:              #ef4444;
+  --color-red-hover:        #dc2626;
+  --color-amber:            #f59e0b;
+  --color-dark:             #111827;
+  --color-table-head:       #f8fafc;
+
+  /* Typography */
+  --font-stack:             "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono:              "Cascadia Code", "Fira Code", Consolas, monospace;
+
+  /* Radii */
+  --radius-sm:              6px;
+  --radius-md:              10px;
+  --radius-lg:              14px;
+  --radius-full:            9999px;
+
+  /* Shadows */
+  --shadow-xs:              0 1px 2px rgba(0,0,0,.04);
+  --shadow-sm:              0 1px 3px rgba(0,0,0,.06),
+                            0 2px 10px rgba(0,0,0,.06);
+  --shadow-md:              0 1px 4px rgba(0,0,0,.06),
+                            0 8px 28px rgba(0,0,0,.09);
+  --shadow-lg:              0 1px 6px rgba(0,0,0,.08),
+                            0 16px 48px rgba(0,0,0,.12);
+  --shadow-focus:           0 0 0 3px rgba(37,99,235,.25);
+
+  /* Transitions */
+  --transition-fast:        .16s ease;
+  --transition-normal:      .22s ease;
+
+  /* Spacing scale (4px base) */
+  --space-1:  .25rem;  /*  4px */
+  --space-2:  .5rem;   /*  8px */
+  --space-3:  .75rem;  /* 12px */
+  --space-4:  1rem;    /* 16px */
+  --space-5:  1.25rem; /* 20px */
+  --space-6:  1.5rem;  /* 24px */
+  --space-8:  2rem;    /* 32px */
+  --space-10: 2.5rem;  /* 40px */
 }
-/* Darkens the background color of buttons on hover for a visual feedback effect. */
-.controls button:hover, #addrow:hover { background-color: #45a049; }
-/* Specific background color for the Settings button. */
-#settings-btn { background-color: #008CBA; } /* Blue background */
-/* Darkens the Settings button on hover. */
-#settings-btn:hover { background-color: #007BA5; }
 
-
-/* General Elements */
-/* Base styling for all textarea and input fields to make them look like plain text. */
-textarea, input { border: 0; font: 14px Georgia, Serif; overflow: hidden; resize: none; background-color: transparent; width: 100%; padding: 5px; text-align: center; }
-/* Ensures the table borders collapse into a single line. */
-table { border-collapse: collapse; width: 100%;}
-/* Styles for all table cells (td and th), including borders and padding. */
-table td, table th { border: 1px solid black; padding: 5px; text-align: center; vertical-align: middle; }
-
-/* Header and Identity */
-/* Styles the main "INVOICE" title bar. */
-#header { width: 100%; margin: 20px 0; background: #222; text-align: center; color: white; font: bold 15px Helvetica, Sans-Serif; text-decoration: uppercase; letter-spacing: 20px; padding: 8px 0px; }
-/* Uses flexbox to position the address and logo areas side-by-side. */
-#identity { display: flex; justify-content: space-between; align-items: flex-start; }
-/* Styles the address block textarea. */
-#address { width: 250px; min-height: 100px; text-align: left;}
-/* Aligns the logo to the right. */
-#logo { text-align: right; margin: 20px 0; }
-/* Ensures the logo image is responsive and doesn't exceed its container's width. */
-#logo img { max-width: 800px; height: auto; }
-
-/* Customer and Meta */
-/* Container for the customer title and the meta table (date, etc.). */
-#customer { 
-    overflow: hidden;
-    position: relative; /* Diperlukan untuk memposisikan tombol font secara absolut */
+/* ==========================================================
+   2. Reset & Base
+   ========================================================== */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
-/* Styles the customer's name/title. */
-#customer-title { font-size: 20px; font-weight: bold; float: left; width: 50%; text-align: left; }
-/* Styles the table on the right that contains the date. */
-#meta { margin-top: 1px; width: 300px; float: right; }
-/* Uses flexbox to center content within the meta table cells. */
-#meta td { display: flex; align-items: center; justify-content: center; }
-/* Styles the header cell in the meta table (e.g., "Date"). */
-#meta td.meta-head { background: #eee; justify-content: center;}
-/* Ensures the textarea inside the meta table is centered. */
-#meta td textarea { text-align: center; }
 
-/* Font Size Controls */
+html { height: 100%; }
+
+body {
+  min-height: 100%;
+  font-family: var(--font-stack);
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--color-text);
+  background: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ==========================================================
+   3. Page Wrap (Invoice Card)
+   ========================================================== */
+#page-wrap {
+  width: 100%;
+  max-width: 860px;
+  margin: 0 auto;
+  padding: var(--space-5);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-md);
+}
+
+/* On larger screens, float the card with top/bottom breathing room */
+@media (min-width: 900px) {
+  #page-wrap {
+    margin: var(--space-8) auto;
+    border-radius: var(--radius-lg);
+  }
+}
+
+/* ==========================================================
+   4. Controls Toolbar
+   ========================================================== */
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  justify-content: center;
+  padding: var(--space-3) 0 var(--space-5);
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: var(--space-6);
+}
+
+/* Shared button base */
+.controls button,
+#addrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: .55rem 1.1rem;
+  font-size: .875rem;
+  font-weight: 600;
+  font-family: var(--font-stack);
+  color: #fff;
+  background: var(--color-green);
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background var(--transition-fast),
+              transform var(--transition-fast),
+              box-shadow var(--transition-fast);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.controls button:hover,
+#addrow:hover {
+  background: var(--color-green-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16,185,129,.3);
+}
+
+.controls button:active,
+#addrow:active {
+  transform: translateY(0);
+}
+
+/* Utility button variants via attribute selector */
+#settings-btn {
+  background: var(--color-primary);
+}
+#settings-btn:hover {
+  background: var(--color-primary-hover);
+  box-shadow: 0 4px 12px rgba(37,99,235,.3);
+}
+
+#history-btn {
+  background: #6366f1;
+}
+#history-btn:hover {
+  background: #4f46e5;
+  box-shadow: 0 4px 12px rgba(99,102,241,.3);
+}
+
+#print-btn {
+  background: #64748b;
+}
+#print-btn:hover {
+  background: #475569;
+  box-shadow: 0 4px 12px rgba(100,116,139,.3);
+}
+
+/* ==========================================================
+   5. Header Row (INVOICE title + doctype dropdown)
+   ========================================================== */
+#header-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: var(--space-4) 0 var(--space-6);
+}
+
+#header {
+  flex: 1;
+  margin: 0;
+  background: var(--color-dark);
+  text-align: center;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  font-family: var(--font-stack);
+  letter-spacing: .55em;
+  text-transform: uppercase;
+  padding: .7rem 0;
+  border-radius: var(--radius-sm);
+}
+
+#doctype-select {
+  flex-shrink: 0;
+  padding: .55rem 2rem .55rem .75rem;
+  font-size: .85rem;
+  font-weight: 600;
+  font-family: var(--font-stack);
+  color: #fff;
+  background: var(--color-dark);
+  border: 1.5px solid rgba(255,255,255,.25);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='white' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right .6rem center;
+  transition: border-color var(--transition-fast), background-color var(--transition-fast);
+}
+
+#doctype-select:hover {
+  border-color: rgba(255,255,255,.5);
+}
+
+#doctype-select:focus {
+  outline: none;
+  border-color: rgba(255,255,255,.7);
+  box-shadow: 0 0 0 2px rgba(255,255,255,.15);
+}
+
+#doctype-select option {
+  color: var(--color-dark);
+  background: #fff;
+}
+
+/* ==========================================================
+   6. Identity Section (Address + Logo)
+   ========================================================== */
+#identity {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+#address {
+  width: 100%;
+  height: auto;
+  min-height: 140px;
+  text-align: left;
+  padding: var(--space-3);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-sm);
+  background: #ffffff;
+  font-family: var(--font-stack);
+  font-size: .9rem;
+  line-height: 1.6;
+  /* Wrap & flexibility */
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  /* Show all text — no scrollbar, no clipping */
+  overflow: visible;
+  resize: vertical;
+}
+
+#logo {
+  text-align: center;
+  margin: 0;
+}
+
+#logo img {
+  max-width: 280px;
+  width: 100%;
+  height: auto;
+}
+
+/* Side-by-side on wider screens */
+@media (min-width: 640px) {
+  #identity {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  #address {
+    flex: 1 1 0;
+    min-width: 200px;
+  }
+  #logo {
+    text-align: right;
+    flex-shrink: 0;
+  }
+  #logo img {
+    max-width: 320px;
+  }
+}
+
+@media (min-width: 860px) {
+  #logo img { max-width: 400px; }
+}
+
+/* ==========================================================
+   7. Customer + Meta
+   ========================================================== */
+#customer {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+  padding-top: 0;
+}
+
+/* Font size controls – repositioned for mobile */
 .font-controls {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: flex-end;
+  margin-bottom: var(--space-2);
+}
+
+.font-controls button {
+  background: #6b7280;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+  font-size: 18px;
+  line-height: 28px;
+  padding: 0;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition-fast),
+              transform var(--transition-fast);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.font-controls button:hover {
+  background: var(--color-dark);
+  transform: scale(1.08);
+}
+
+/* Customer title */
+#customer-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  width: 100%;
+  text-align: center;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  font-family: var(--font-stack);
+  transition: border-color var(--transition-fast);
+}
+
+#customer-title:focus {
+  border-color: var(--color-border);
+  background: #fafbfc;
+  outline: none;
+}
+
+/* Meta table (date) */
+#meta {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+#meta td {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  font-size: .9rem;
+  vertical-align: middle;
+}
+
+#meta td.meta-head {
+  background: #f8fafc;
+  font-weight: 600;
+  width: 30%;
+  white-space: nowrap;
+  color: var(--color-text-muted);
+  vertical-align: middle;
+}
+
+#meta td textarea {
+  text-align: center;
+  font-family: var(--font-stack);
+  display: block;
+  width: 100%;
+}
+
+/* Wider: side-by-side name | date */
+@media (min-width: 600px) {
+  #customer {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: var(--space-6);
+  }
+
+  .font-controls {
     position: absolute;
     top: 0;
-    left: 42%; /* Posisi di dekat akhir area nama pelanggan */
-    display: flex;
-    gap: 5px;
-    align-items: center;
-}
-.font-controls button {
-    background-color: #666;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    cursor: pointer;
-    width: 24px;
-    height: 24px;
-    font-size: 18px;
-    line-height: 24px;
-    padding: 0;
+    right: 0;
     margin: 0;
-    font-weight: bold;
-}
-.font-controls button:hover {
-    background-color: #333;
-}
+  }
 
+  #customer-title {
+    flex: 1;
+    font-size: 1.25rem;
+    max-width: 55%;
+  }
 
-/* Items Table */
-/* Main styles for the invoice items table. */
-#items { clear: both; width: 100%; margin: 30px 0 0 0; border: 1px solid black; }
-/* Background color for the table headers (Item, Description, etc.). */
-#items th { background: #eee; }
-/* Ensures content in the table body cells is vertically centered. */
-#items tbody td { vertical-align: middle; }
-/* Styles for the "Use Text" toggle switch container. */
-#items td.description .desc-toggle {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 5px;
-    margin-bottom: 5px;
-    position: relative;
-    top: 5px;
-}
-/* Makes the label for the toggle switch clickable. */
-#items td.description .desc-toggle label {
-    cursor: pointer;
-}
-/* Styles the textarea for the text-based item description. */
-#items td.description .item-description { 
-    height: 30px; 
-    border-bottom: 1px solid #eee; 
-    margin-bottom: 5px; 
-    text-align: center; /* Memastikan teks di dalam textarea ini selalu di tengah */
-}
-/* Styles the container for the check-in and check-out date inputs. */
-#items td.description .date-inputs { display: flex; justify-content: center; align-items: center; gap: 4px; }
-/* Sets a fixed width for the "Item" column and aligns its content to the top. */
-#items td.item-name { 
-    width: 175px; 
-    vertical-align: top; /* Align content to the top */
-}
-
-/* Styles the textarea within the "Item" column for proper text wrapping and alignment. */
-#items td.item-name textarea {
-    text-align: left; /* Align text to the left for better readability */
-    white-space: normal; /* Ensure text can wrap */
-}
-
-
-/* Column Specific Styles */
-/* Sets a smaller fixed width for the "Qty" column. */
-#items .qty-col { width: 60px; }
-/* Sets a fixed width for the "Unit Cost" column and prevents the text from wrapping to a new line. */
-#items .cost-col { width: 120px; white-space: nowrap; }
-/* Sets a fixed width for the "Price" column and prevents the text from wrapping. */
-#items .price-col { width: 120px; white-space: nowrap; }
-
-/* Overrides the default textarea styling for the cost field to ensure proper centering. */
-#items .cost-col textarea {
+  #meta {
     width: auto;
-    padding: 0;
+    min-width: 240px;
+    flex-shrink: 0;
+  }
 }
 
-/* Menggeser posisi *hanya* untuk sel konten Deskripsi dan Harga ke atas sebanyak 5px */
-#items td.description,
-#items td.price-col {
-    position: relative;
-    top: -10px;
+/* ==========================================================
+   8. Room Type Selector Row
+   ========================================================== */
+/* The inline style div + #addrow – we target the container via adjacent sibling */
+.no-print select,
+#addrow {
+  vertical-align: middle;
 }
 
-/* Styles for the total, subtotal, and balance due rows in the table footer. */
-#items td.total-line { border-right: 0; text-align: right; font-weight: bold; padding-right: 10px; }
-/* Styles the cells that contain the actual total values. */
-#items td.total-value { 
-    border-left: 0; 
-    padding: 10px; 
-    text-align: center; 
-    white-space: nowrap; /* Prevents long numbers from wrapping */
+.no-print select {
+  padding: .5rem .75rem;
+  font-size: .875rem;
+  font-family: var(--font-stack);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  margin-right: var(--space-2);
+  cursor: pointer;
+  transition: border-color var(--transition-fast);
 }
-/* Styles the "Amount Paid" textarea within the totals section. */
-#items td.total-value textarea { 
-    height: 20px; 
-    background: none; 
-    text-align: right; 
-    position: relative; 
-    top: 5px; 
+
+.no-print select:focus {
+  border-color: var(--color-primary);
+  outline: none;
+  box-shadow: var(--shadow-focus);
 }
-/* Styles the "Balance Due" row to give it emphasis. */
-#items td.balance { background: #eee; font-weight: bold;}
-/* Hides the border on blank cells used for spacing in the footer. */
-#items td.blank { border: 0; }
-/* A utility class to center text, also applied to inputs and textareas within centered cells. */
-.text-center, .text-center input, .text-center textarea { text-align: center; }
 
-/* A subtle yellow highlight effect when hovering over or focusing on editable fields. */
-textarea:hover, textarea:focus, input:hover, input:focus { background-color:#EEFF88; }
+/* The Add Row link styled as button */
+#addrow {
+  margin-left: var(--space-2);
+}
 
-/* Styles for the container of the delete button and item number. */
-.delete-wpr { position: relative; padding-left: 45px; }
-/* Styles the 'X' delete button for each item row. */
-.delete { display: block; color: #fff; text-decoration: none; position: absolute; background: #e66; font-weight: bold; padding: 0px 5px; border-radius: 50%; top: 5px; left: 0px; font-family: Verdana; font-size: 12px; line-height: 1.4; }
-/* Styles the auto-incrementing item number (1., 2., etc.). */
+/* ==========================================================
+   9. Invoice Items Table
+   ========================================================== */
+
+/* --- Invoice table (desktop) --- */
+#items {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--space-6) 0 0 0;
+  font-size: .875rem;
+}
+
+/* Table headers */
+#items thead th {
+  background: var(--color-table-head);
+  font-weight: 700;
+  font-size: .875rem;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--color-text-muted);
+  padding: .65rem var(--space-2);
+  border: 1px solid var(--color-border-strong);
+  white-space: nowrap;
+  vertical-align: middle;
+  text-align: center;
+}
+
+/* Table cells — consistent vertical centering */
+#items td {
+  padding: .55rem var(--space-2);
+  border: 1px solid var(--color-border);
+  vertical-align: middle;
+}
+
+/* Column widths — enough room so numbers never wrap */
+#items .qty-col    { width: 55px;  white-space: nowrap; }
+#items .cost-col   { width: 115px; white-space: nowrap; }
+#items .price-col  { width: 115px; white-space: nowrap; }
+
+/* Item name column */
+#items td.item-name {
+  width: 165px;
+  vertical-align: middle;
+  padding: .55rem var(--space-2);
+}
+
+#items td.item-name textarea {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--font-stack);
+}
+
+/* Description column */
+#items td.description {
+  position: relative;
+  vertical-align: middle;
+}
+
+/* Toggle inside description */
+#items td.description .desc-toggle {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+  font-size: .75rem;
+}
+
+#items td.description .desc-toggle label {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+/* Description textarea */
+#items td.description .item-description {
+  height: 30px;
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 4px;
+  text-align: center;
+  font-family: var(--font-stack);
+}
+
+/* Date inputs row — always horizontal */
+#items td.description .date-inputs {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+
+.date-separator {
+  margin: 0 4px;
+  color: var(--color-text-muted);
+  font-size: .8rem;
+}
+
+/* --- Editable textarea & input base --- */
+textarea,
+input {
+  border: 0;
+  font-family: var(--font-stack);
+  font-size: .875rem;
+  overflow-x: hidden;
+  overflow-y: visible;
+  resize: none;
+  background: transparent;
+  width: 100%;
+  padding: 4px 6px;
+  border-radius: 4px;
+  transition: background var(--transition-fast);
+  vertical-align: middle;
+}
+
+/* All textareas inside table cells must sit on the same vertical axis */
+#items td textarea,
+#items td input,
+#items td span {
+  vertical-align: middle;
+}
+
+textarea:hover,
+textarea:focus,
+input:hover,
+input:focus {
+  background: #fef9e7;
+  outline: none;
+}
+
+/* Cost column — keep width auto, no text-align override */
+#items .cost-col textarea {
+  width: auto;
+  padding: 0 4px;
+}
+
+/* All table cells — unified center alignment + uniform font */
+#items th,
+#items td,
+#items td textarea,
+#items td input,
+#items td span,
+#items td div {
+  text-align: center;
+  font-size: .875rem;
+  font-family: var(--font-stack);
+}
+
+/* ==========================================================
+   10. Totals Footer
+   ========================================================== */
+#items tfoot td {
+  border: 1px solid var(--color-border);
+  padding: .55rem var(--space-3);
+}
+
+#items td.total-line {
+  border-right: 0;
+  text-align: center;
+  font-weight: 600;
+  font-size: .85rem;
+  color: var(--color-text-muted);
+  padding-right: var(--space-3);
+}
+
+#items td.total-value {
+  border-left: 0;
+  text-align: center;
+  font-weight: 600;
+  font-size: .9rem;
+  white-space: nowrap;
+  padding: .55rem var(--space-3);
+}
+
+#items td.total-value textarea {
+  height: 22px;
+  text-align: center;
+  background: transparent;
+}
+
+#items td.balance {
+  background: #f1f5f9;
+  font-weight: 700;
+  font-size: .95rem;
+  color: var(--color-dark);
+}
+
+#items td.blank {
+  border: 0;
+  background: transparent;
+}
+
+/* Utility */
+.text-center,
+.text-center input,
+.text-center textarea {
+  text-align: center;
+}
+
+/* ==========================================================
+   11. Delete Button & Item Number
+   ========================================================== */
+.delete-wpr {
+  position: relative;
+  padding-left: 50px;
+}
+
+.delete {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  text-decoration: none;
+  position: absolute;
+  background: var(--color-red);
+  font-weight: 700;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  top: 3px;
+  left: 0;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background var(--transition-fast),
+              transform var(--transition-fast);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.delete:hover {
+  background: var(--color-red-hover);
+  transform: scale(1.12);
+}
+
 .item-number {
+  position: absolute;
+  top: 5px;
+  left: 28px;
+  font-size: .85rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+/* ==========================================================
+   12. Date Inputs (checkin/checkout)
+   ========================================================== */
+#items input[type="date"] {
+  font-size: .8rem;
+  padding: 2px 4px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-surface);
+  width: auto;
+  min-width: 120px;
+}
+
+#items input[type="date"]:focus {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-focus);
+  background: #fff;
+}
+
+/* ==========================================================
+   13. Terms Section
+   ========================================================== */
+#terms {
+  text-align: center;
+  margin: var(--space-6) 0 0 0;
+}
+
+#terms h5 {
+  text-transform: uppercase;
+  font-size: .8rem;
+  font-weight: 700;
+  font-family: var(--font-stack);
+  letter-spacing: .35em;
+  border-bottom: 2px solid var(--color-dark);
+  padding: 0 0 var(--space-2) 0;
+  margin: 0 0 var(--space-3) 0;
+  color: var(--color-text-muted);
+}
+
+#terms textarea {
+  text-align: center;
+  font-size: .85rem;
+  color: var(--color-text-muted);
+  min-height: 40px;
+}
+
+/* ==========================================================
+   14. Modal Windows
+   ========================================================== */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  overflow-y: auto;
+  background: rgba(15, 23, 42, .55);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  animation: fadeIn .2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.modal-content {
+  background: var(--color-surface);
+  margin: 8% auto;
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  width: 92%;
+  max-width: 520px;
+  animation: slideUp .25s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+/* Close button */
+.close-button {
+  color: #9ca3af;
+  float: right;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  transition: color var(--transition-fast);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.close-button:hover,
+.close-button:focus {
+  color: var(--color-dark);
+}
+
+/* ==========================================================
+   15. History List
+   ========================================================== */
+#invoice-list {
+  list-style: none;
+  padding: 0;
+  margin-top: var(--space-4);
+}
+
+#invoice-list li {
+  padding: var(--space-3) var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-2);
+  border-radius: var(--radius-sm);
+  transition: background var(--transition-fast);
+}
+
+#invoice-list li:hover {
+  background: #f8fafc;
+}
+
+#invoice-list li .invoice-info {
+  display: flex;
+  flex-wrap: wrap;
+  flex: 1 1 auto;
+  gap: var(--space-2);
+  align-items: center;
+  min-width: 0;
+}
+
+#invoice-list li .customer {
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+/* Delete invoice button */
+#invoice-list li .delete-invoice-btn {
+  background: var(--color-red);
+  color: #fff;
+  border: none;
+  padding: .4rem .75rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: .8rem;
+  font-weight: 600;
+  font-family: var(--font-stack);
+  white-space: nowrap;
+  transition: background var(--transition-fast);
+}
+
+#invoice-list li .delete-invoice-btn:hover {
+  background: var(--color-red-hover);
+}
+
+/* ==========================================================
+   16. Settings Form
+   ========================================================== */
+#settings-form {
+  margin-top: var(--space-5);
+}
+
+.setting-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.setting-item label {
+  font-weight: 600;
+  font-size: .875rem;
+  flex: 1 1 55%;
+  min-width: 0;
+  color: var(--color-text);
+}
+
+.setting-item .price-input {
+  flex: 0 1 140px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: .55rem .65rem;
+  text-align: right;
+  font-family: var(--font-stack);
+  font-size: .9rem;
+  background: #fafbfc;
+  transition: border-color var(--transition-fast),
+              box-shadow var(--transition-fast);
+}
+
+.setting-item .price-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-focus);
+  background: #fff;
+  outline: none;
+}
+
+#save-settings-btn {
+  display: block;
+  width: 100%;
+  margin-top: var(--space-4);
+  padding: .7rem 1.5rem;
+  font-size: .95rem;
+  font-weight: 600;
+  font-family: var(--font-stack);
+  color: #fff;
+  background: var(--color-green);
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background var(--transition-fast),
+              transform var(--transition-fast),
+              box-shadow var(--transition-fast);
+}
+
+#save-settings-btn:hover {
+  background: var(--color-green-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(16,185,129,.3);
+}
+
+#save-settings-btn:active {
+  transform: translateY(0);
+}
+
+
+
+/* ==========================================================
+   18. Print Styles — mirror screen appearance exactly
+   ========================================================== */
+
+/* ----- Page Setup (A4) ----- */
+@page {
+  size: A4;
+  margin: 10mm 12mm 12mm 12mm;
+}
+
+@media print {
+  /* ---- Ensure colors & backgrounds print ---- */
+  *,
+  *::before,
+  *::after {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  body {
+    -webkit-font-smoothing: auto;
+    -moz-osx-font-smoothing: auto;
+  }
+
+  /* ---- Card: remove shadow only, keep everything else ---- */
+  #page-wrap {
+    box-shadow: none;
+    overflow-x: visible;
+  }
+
+  /* ============================================================
+     Hide interactive / UI elements only
+     ============================================================ */
+  .no-print,
+  .controls,
+  .modal,
+  #addrow,
+  #roomType,
+  .delete,
+  .delete-wpr .delete,
+  .desc-toggle,
+  .delete-invoice-btn,
+  .font-controls,
+  .close-button,
+  select,
+  button {
+    display: none !important;
+  }
+
+  /* ============================================================
+     ALL inputs/textareas → plain text on paper
+     ============================================================ */
+
+  /* Universal: strip all browser chrome from inputs & textareas */
+  textarea,
+  input {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    outline: none !important;
+    resize: none !important;
+    overflow: visible !important;
+    height: auto !important;
+    width: 100% !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    font-family: inherit !important;
+    color: #000 !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+  }
+
+  /* Remove number input spin buttons (Chrome, Firefox) */
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    margin: 0 !important;
+  }
+  input[type="number"] {
+    -moz-appearance: textfield !important;
+  }
+
+  /* Remove date picker icon (all browsers) */
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="date"]::-webkit-inner-spin-button {
+    display: none !important;
+  }
+  input[type="date"]::-moz-calendar-picker-indicator {
+    display: none !important;
+  }
+
+  /* Hide placeholder text on empty inputs */
+  input::placeholder,
+  textarea::placeholder {
+    color: transparent !important;
+    opacity: 0 !important;
+  }
+
+  /* Hide empty inputs that only show placeholder */
+  input:placeholder-shown,
+  textarea:placeholder-shown {
+    color: transparent !important;
+  }
+
+  /* ---- Address: left-align, white background, all text visible ---- */
+  #address {
+    text-align: left !important;
+    background: #ffffff !important;
+    white-space: pre-wrap !important;
+    word-break: break-word !important;
+    min-height: 80pt !important;
+    width: auto !important;
+  }
+
+  /* ---- All table text: center-aligned ---- */
+  #items th,
+  #items td,
+  #items td textarea,
+  #items td input,
+  #items td span,
+  #items td div,
+  #items td .price,
+  #meta td,
+  #meta td textarea,
+  #customer-title,
+  #terms,
+  #terms textarea,
+  .total-line,
+  .total-value,
+  .total-value textarea,
+  .total-value div {
+    text-align: center !important;
+  }
+
+  /* Date inputs: horizontal row */
+  #items td.description .date-inputs {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    justify-content: center !important;
+    align-items: center !important;
+    white-space: nowrap !important;
+  }
+
+  #items input[type="date"] {
+    text-align: center !important;
+    white-space: nowrap !important;
+    width: auto !important;
+  }
+
+  /* Hide description textarea — show only date inputs */
+  #items td.description .item-description {
+    display: none !important;
+  }
+
+  /* Item name: show ALL text */
+  #items td.item-name textarea {
+    text-align: center !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    height: auto !important;
+    text-overflow: unset !important;
+    width: 100% !important;
+  }
+
+  /* ============================================================
+     Items Table — page-break rules only
+     ============================================================ */
+  #items {
+    display: table;
+    min-width: 0;
+    overflow-x: visible;
+    page-break-inside: auto;
+  }
+
+  /* Repeat header on every page */
+  #items thead {
+    display: table-header-group;
+  }
+
+  /* Footer appears once at the very end */
+  #items tfoot {
+    display: table-row-group;
+    page-break-inside: avoid;
+  }
+
+  /* Don't split a row across two pages */
+  #items tbody tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+
+  /* ---- Show item numbering ---- */
+  .item-number {
+    display: inline-block;
     position: absolute;
     top: 5px;
-    left: 20px;
-    font-family: Georgia, Serif;
-    line-height: 1.4;
+    left: 4px;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-align: center;
+    min-width: 20px;
+  }
+
+  /* ---- Terms: keep together ---- */
+  #terms {
+    page-break-inside: avoid;
+  }
 }
-
-/* Styles the hyphen between the check-in and check-out dates. */
-.date-separator {
-    margin: 0 5px;
-}
-
-/* Modal Styles */
-/* Base styles for the modal pop-up windows (History and Settings). Initially hidden. */
-.modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); }
-/* Styles the content area within the modal. */
-.modal-content { background-color: #fefefe; margin: 10% auto; padding: 20px; border: 1px solid #888; width: 60%; max-width: 500px; border-radius: 5px; }
-/* Styles the '×' close button in the top right corner of the modal. */
-.close-button { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
-.close-button:hover, .close-button:focus { color: black; text-decoration: none; }
-
-/* History Modal List */
-/* Styles the unordered list that holds the invoice history. */
-#invoice-list { list-style-type: none; padding: 0; }
-/* Styles each list item in the invoice history. */
-#invoice-list li { padding: 12px; border-bottom: 1px solid #ddd; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-/* Highlight effect when hovering over a history item. */
-#invoice-list li:hover { background-color: #f1f1f1; }
-/* Makes the customer name bold in the history list. */
-#invoice-list li .customer { font-weight: bold; }
-/* Styles the container for the invoice details (customer, date, total). */
-#invoice-list li .invoice-info { display: flex; flex-grow: 1; justify-content: space-between; align-items: center; margin-right: 20px; }
-/* Styles the delete button for each history item. */
-#invoice-list li .delete-invoice-btn { background-color: #f44336; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; }
-#invoice-list li .delete-invoice-btn:hover { background-color: #da190b; }
-
-/* Settings Modal */
-/* Adds some top margin to the settings form. */
-#settings-form { margin-top: 20px; }
-/* Styles the container for each setting item (label + input field). */
-.setting-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-}
-/* Styles the label for each setting (e.g., "Standard Room:"). */
-.setting-item label {
-    font-weight: bold;
-    text-align: left;
-    flex-basis: 60%;
-}
-/* Styles the price input fields in the settings modal. */
-.setting-item .price-input {
-    flex-basis: 35%;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    padding: 8px;
-    text-align: right;
-}
-/* Styles the "Save Settings" button. */
-#save-settings-btn {
-    background-color: #4CAF50;
-    color: white;
-    padding: 10px 20px;
-    margin-top: 15px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-    width: 100%;
-}
-#save-settings-btn:hover { background-color: #45a049; }
-
-/* Terms */
-/* Styles the container for the "Terms" section at the bottom of the invoice. */
-#terms { text-align: center; margin: 20px 0 0 0; }
-/* Styles the "Terms" heading. */
-#terms h5 { text-transform: uppercase; font: 13px Helvetica, Sans-Serif; letter-spacing: 10px; border-bottom: 1px solid black; padding: 0 0 8px 0; margin: 0 0 8px 0; }
-/* Styles the textarea for the terms content. */
-#terms textarea { text-align: center;}
-
-/* Print Styles */
-/* This block contains styles that are ONLY applied when the user prints the page. */
-@media print {
-    /* Resets the body background for printing. */
-    body { background: none; }
-    /* Removes margin and shadow from the main container for a clean print layout. */
-    #page-wrap { margin: 0; box-shadow: none; border: none; }
-    /* Hides all elements that shouldn't be printed, like buttons. */
-    .no-print, #addrow, .delete, .desc-toggle, .delete-invoice-btn { display: none !important; }
-    /* Removes borders and backgrounds from input fields for a cleaner print look. */
-    textarea, input {
-        border: none !important;
-        background-color: transparent !important;
-        box-shadow: none !important;
-        resize: none;
-        -webkit-print-color-adjust: exact; /* Ensures colors are printed correctly in Chrome. */
-    }
-
-    /* Memastikan footer hanya muncul di akhir tabel (halaman terakhir) */
-    /* Aturan ini mengubah perilaku default footer (yang diulang di setiap halaman) */
-    /* menjadi seperti bagian dari isi tabel biasa, sehingga hanya muncul sekali di akhir. */
-    #items tfoot {
-        display: table-row-group;
-    }
-    
-    /* Stronger rules to hide the calendar icon on all browsers when printing. */
-    #items input[type="date"]::-webkit-calendar-picker-indicator {
-        display: none !important;
-    }
-    /* Removes default browser styling from date inputs to make them look like plain text on print. */
-    #items input[type="date"] {
-        padding: 0;
-        margin: 0;
-        width: auto;
-        -webkit-appearance: none; /* Removes default styling on iOS/Safari */
-        appearance: none;         /* Removes default styling on other browsers */
-        background: none !important; /* Ensures no background image icon */
-    }
-
-    /* Sets vertical alignment for all table body cells on print. */
-    #items tbody td {
-        vertical-align: middle;
-    }
-
-    /* Sets horizontal text alignment for specific columns for better readability on print. */
-    /* Item and Description text is aligned to the left. */
-    #items tbody .item-name,
-    #items tbody .description,
-    #items tbody .item-name textarea,
-    #items tbody .description textarea {
-        text-align: left;
-        padding-left: 5px;
-    }
-
-    /* Cost, Price, and Qty are centered on print. */
-    #items tbody .cost-col,
-    #items tbody .price-col,
-    #items tbody .qty-col {
-        text-align: center;
-    }
-    
-    #items tbody .cost-col textarea {
-        text-align: center;
-    }
-}
-
